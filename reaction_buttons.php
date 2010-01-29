@@ -3,7 +3,7 @@
    Plugin Name: Reaction Buttons
    Plugin URI: http://blog.jl42.de/reaction-buttons/
    Description: Adds Buttons for very simple and fast feedback to your post. Inspired by Blogger.
-   Version: 0.9
+   Version: 0.9.1
    Author: Jakob Lenfers
    Author URI: http://blog.jl42.de
 
@@ -29,6 +29,21 @@
 // Determine the location
 $reaction_buttons_plugin_path = WP_CONTENT_URL.'/plugins/'.plugin_basename(dirname(__FILE__)).'/';
 
+/**
+ *
+ */
+function prepare_js_jl($str) {
+	return str_replace("'", "\\\\'", esc_js(trim($str)));
+}
+
+
+/**
+ *
+ */
+function prepare_attr_jl($str) {
+	return esc_attr(str_replace(" ", "___", stripslashes(trim($str))));
+}
+
 
 /**
  * Returns the reaction buttons.
@@ -50,14 +65,14 @@ function reaction_buttons_html() {
 	 }
 
 	// get the buttons and strip whitespaces
-	$buttons = explode(",", preg_replace("/,\s/", ",", get_option('reaction_buttons_button_names')));
-
+	$buttons = explode(",", preg_replace("/,\s+/", ",", get_option('reaction_buttons_button_names')));
+	
 	// print every button
 	foreach($buttons as $button){
-		$count = intval(get_post_meta(get_the_ID(), "_reaction_buttons_" . trim($button), true));
-		$html .= "<span class='reaction_button_" . trim($button) .
+		$count = intval(get_post_meta(get_the_ID(), "_reaction_buttons_" . stripslashes(trim($button)), true));
+		$html .= "<span class='reaction_button_" . prepare_attr_jl($button) .
 			"_count' onclick=\"reaction_buttons_increment_button_ajax('" . get_the_ID() . "', '" .
-			trim($button) . "');\">" . trim($button) . "&nbsp;<span>(" . $count . ")</span></span> ";
+			prepare_js_jl($button) . "');\">" . stripslashes(trim($button)) . "&nbsp;<span>(" . $count . ")</span></span> ";
 	}
 	$html .= "</div>\n";
 
@@ -145,13 +160,13 @@ function reaction_buttons_clean_old_button_names(){
 	global $wpdb;
 	$table = $wpdb->prefix . "postmeta";
 	
-	$buttons = explode(",", preg_replace("/,\s/", ",", get_option('reaction_buttons_button_names')));
+	$buttons = explode(",", preg_replace("/,\s+/", ",", get_option('reaction_buttons_button_names')));
 	$delete_meta_ids = array();
 
 	// get the Reaction Buttons datat out of the db
 	$reactions = $wpdb->get_results("SELECT meta_id,meta_key FROM " . $wpdb->prefix . "postmeta where meta_key like '_reaction_buttons%'");
 	
-	// chech what records can be deleted
+	// check what records can be deleted
 	foreach ($reactions as $reaction){
 		if(!in_array(substr($reaction->meta_key, 18), $buttons)){
 			$delete_meta_ids[] = $reaction->meta_id;
@@ -160,7 +175,7 @@ function reaction_buttons_clean_old_button_names(){
 
 	// delete those records from the db
 	if ( !empty( $delete_meta_ids ) ) {
-		$wpdb->query("DELETE FROM $table where meta_key IN ('" . explode(",", $delete_meta_ids) ."');");
+		$wpdb->query("DELETE FROM $table where meta_id IN (" . implode(",", $delete_meta_ids) .");");
 	}
 	reaction_buttons_message(__("Removed unused data.", 'reaction_buttons'));
 }
@@ -185,14 +200,17 @@ function reaction_buttons_js_header() {
 	$nonce = wp_create_nonce( 'reaction_buttons' );
 	?>
 	<script	 type='text/javascript'><!--
-		function reaction_buttons_increment_button_ajax(post_id, button){
+	function prepare_attr_jl(str) {
+		return str.replace(" ", "___");
+	}
+	function reaction_buttons_increment_button_ajax(post_id, button){
 			jQuery.ajax({
 				type: "post",url: "<?php bloginfo( 'wpurl' ); ?>/wp-admin/admin-ajax.php",
 						data: { action: 'reaction_buttons_increment_button_php', post_id: post_id, button: button, _ajax_nonce: '<?php echo $nonce; ?>' },
 						success: function(html){
-						jQuery("#reaction_buttons_post" + post_id + " span.reaction_button_" + button + "_count").removeAttr('onclick');
-						jQuery("#reaction_buttons_post" + post_id + " span.reaction_button_" + button + "_count span").html(html);
-						jQuery("#reaction_buttons_post" + post_id + " span.reaction_button_" + button + "_count").addClass('voted');
+						jQuery("#reaction_buttons_post" + post_id + " span.reaction_button_" + prepare_attr_jl(button) + "_count").removeAttr('onclick');
+						jQuery("#reaction_buttons_post" + post_id + " span.reaction_button_" + prepare_attr_jl(button) + "_count span").html(html);
+						jQuery("#reaction_buttons_post" + post_id + " span.reaction_button_" + prepare_attr_jl(button) + "_count").addClass('voted');
 					}
 			});
 		}
@@ -215,7 +233,7 @@ function reaction_buttons_increment_button_php(){
 
 	if(!$_POST['post_id'] || !$_POST['button']) die();
 	$post_id = intval($_POST['post_id']);
-	$button = $_POST['button'];
+	$button = stripslashes($_POST['button']);
 
 	// get all the buttons, stripped of whitespaces
 	$buttons = explode(",", preg_replace("/,\s/", ",", get_option('reaction_buttons_button_names')));
@@ -223,8 +241,8 @@ function reaction_buttons_increment_button_php(){
 	if(!in_array($button, $buttons)) die();
 
 	// get old button value and update it
-	$current = intval(get_post_meta($post_id, "_reaction_buttons_" . $button, true));
-	update_post_meta($post_id, "_reaction_buttons_" . $button, ++$current);
+	$current = intval(get_post_meta($post_id, "_reaction_buttons_" . stripslashes($button), true));
+	update_post_meta($post_id, "_reaction_buttons_" . stripslashes($button), ++$current);
 
 	// return the new value, so that the js can insert it into the blog
 	echo "($current)";
@@ -312,6 +330,7 @@ function reaction_buttons_submenu() {
 	// saves the settings from the page
 	else if (isset($_REQUEST['save']) && $_REQUEST['save']) {
 		check_admin_referer('reaction_buttons_config');
+		$error = "";
 
 		// save the different settings (boolean, text, array of bool)
 		foreach ( array('activate', 'usecss') as $val ) {
@@ -321,13 +340,25 @@ function reaction_buttons_submenu() {
 				update_option('reaction_buttons_'.$val,false);
 		}
 
-		foreach ( array('tagline', 'button_names') as $val ) {
+		foreach ( array('tagline') as $val ) {
 			if ( !$_POST[$val] )
 				update_option( 'reaction_buttons_'.$val, '');
 			else
 				update_option( 'reaction_buttons_'.$val, $_POST[$val] );
 		}
-
+		
+		if ( !$_POST['button_names'] ) {
+			update_option( 'reaction_buttons_button_names', '');
+		}
+		else {
+			if(strpos($_POST['button_names'], '"')){
+				$error .= __('Error: Button Names cannot contain quotes (").', 'reaction_buttons') . "<br />";
+			}
+			else {
+				update_option( 'reaction_buttons_button_names', $_POST['button_names'] );
+			}
+		}
+	
 		
 		$conditionals = Array();
 		if (!$_POST['conditionals'])
@@ -343,7 +374,13 @@ function reaction_buttons_submenu() {
 		update_option('reaction_buttons_conditionals', $conditionals);
 
 		// done saving
-		reaction_buttons_message(__("Saved changes.", 'reaction_buttons'));
+		if ( $error ) {
+			$error = $error . __("Some settings couldn't be saved. More details in the error message below:<br />", 'reaction_buttons');
+			reaction_buttons_message($error);
+		}
+		else {
+			reaction_buttons_message(__("Saved changes.", 'reaction_buttons'));
+		}
 	}
 	
 	/**

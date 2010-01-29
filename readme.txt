@@ -2,7 +2,7 @@
 Tags: button, comment, posts
 Requires at least: 2.9.1
 Tested up to: 2.9.1
-Stable tag: 0.9
+Stable tag: 0.9.1
 
 Adds Buttons for very simple and fast feedback to your post. Inspired by Blogger.
 
@@ -32,5 +32,13 @@ No. :-)
 
 == Changelog ==
 
+= 0.9.1 =
+* fixed issues with spaces
+* fixed issues with apostrophs
+* some changes in the settings area
+
 = 0.9 =
 * First public release.
+
+== Restrictions ==
+* There cannot be spaces in html classes, so the plugin wouldn't work if there would be buttons named "great article" *and* "great___article", because it converts the spaces into three underscores.
