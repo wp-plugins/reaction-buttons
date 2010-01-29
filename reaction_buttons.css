@@ -1,0 +1,18 @@
+div.reaction_buttons{
+    margin-top: 20px;
+    font-size: 0.8em;
+    text-align: left;
+}
+
+div.reaction_buttons > span {
+    line-height: 3.2em;
+    padding: 5px;
+    margin: 0 3px;
+    margin-bottom: 25px;
+    border: 1px dotted #000;
+}
+
+div.reaction_buttons > span:hover {
+    background-color: #0F6;
+}
+
