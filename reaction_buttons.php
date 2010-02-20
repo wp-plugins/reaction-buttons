@@ -3,9 +3,9 @@
    Plugin Name: Reaction Buttons
    Plugin URI: http://blog.jl42.de/reaction-buttons/
    Description: Adds Buttons for very simple and fast feedback to your post. Inspired by Blogger.
-   Version: 0.9.1
+   Version: 0.9.2
    Author: Jakob Lenfers
-   Author URI: http://blog.jl42.de
+   // Author URI: http://blog.jl42.de
 
    I used the sociable plugin as template.
 
@@ -54,8 +54,10 @@ function reaction_buttons_html() {
 	}
 	
 	$post_id = get_the_ID();
-	$json = stripslashes($_COOKIE["reaction_buttons_" . $post_id]);
-	$cookie = json_decode($json, true);
+	if(get_option(reaction_buttons_usecookies)){
+		$json = stripslashes($_COOKIE["reaction_buttons_" . $post_id]);
+		$cookie = json_decode($json, true);
+	}
 	if(!is_array($cookie)) $cookie = array();
 
 	// Start preparing the output
@@ -163,6 +165,9 @@ function reaction_buttons_restore_config($force=false) {
 		update_option('reaction_buttons_usecss', true);
 	}
 
+	if ( $force or !( get_option('reaction_buttons_usecookies')) ) {
+		update_option('reaction_buttons_usecookies', false);
+	}
 }
 
 /**
@@ -220,9 +225,11 @@ function reaction_buttons_js_header() {
 				type: "post",url: "<?php bloginfo( 'wpurl' ); ?>/wp-admin/admin-ajax.php", dataType: 'json',
 					data: { action: 'reaction_buttons_increment_button_php', post_id: post_id, button: button, _ajax_nonce: '<?php echo $nonce; ?>' },
 					success: function(data){
-//						   document.cookie = "reaction_buttons="+encodeURIComponent(data['cookie'].toJSONString)+"; max-age=" + 60*60*24*30 +"; path=/; domain=waxford";
-//						alert(data['debug']);
-						jQuery.cookie("reaction_buttons_" + post_id, JSON.stringify(data['cookie']));
+						if(data['cookie']){
+							// Set the cookie, which expires after 3 days. Hope that helps to circumvent
+							// the problem that browsers only have to save 30 cookies per domain.
+							jQuery.cookie("reaction_buttons_" + post_id, JSON.stringify(data['cookie']), {expires: 3});
+						}
 						jQuery("#reaction_buttons_post" + post_id + " span.reaction_button_" + prepare_attr_jl(button) + "_count").removeAttr('onclick');
 						jQuery("#reaction_buttons_post" + post_id + " span.reaction_button_" + prepare_attr_jl(button) + "_count span").html("("+data['count']+")");
 						jQuery("#reaction_buttons_post" + post_id + " span.reaction_button_" + prepare_attr_jl(button) + "_count").addClass('voted');
@@ -231,7 +238,6 @@ function reaction_buttons_js_header() {
 		}
 	--></script>
 	<script type='text/javascript' src='<?php echo WP_CONTENT_URL.'/plugins/'.plugin_basename(dirname(__FILE__)) . '/jquery.cookie.js'; ?>'></script>
-	<script type='text/javascript' src=/wp-includes/js/jquery/json.js'></script>
 	<?php
 	
 }
@@ -264,19 +270,21 @@ function reaction_buttons_increment_button_php(){
 	$current = intval(get_post_meta($post_id, "_reaction_buttons_" . stripslashes($button), true));
 	update_post_meta($post_id, "_reaction_buttons_" . stripslashes($button), ++$current);
 
-	if ( $_COOKIE["reaction_buttons"] ) {
-		$json = stripslashes($_COOKIE["reaction_buttons_" . $post_id]);
- 		$cookie = json_decode($json, true);
-		if(!is_array($cookie)) $cookie = array();
+	if(get_option(reaction_buttons_usecookies)){
+		if ( $_COOKIE["reaction_buttons"] ) {
+			$json = stripslashes($_COOKIE["reaction_buttons_" . $post_id]);
+			$cookie = json_decode($json, true);
+			if(!is_array($cookie)) $cookie = array();
+		}
+		else {
+			$cookie = array();
+		}
+		
+		$cookie[$button] = true;
+		$result['cookie'] = $cookie;
 	}
-	else {
-		$cookie = array();
-	}
-	
-	$cookie[$button] = true;
 	
 	$result['count'] = $current;
-	$result['cookie'] = $cookie;
 
 	// return the new value, so that the js can insert it into the blog
 	echo json_encode($result);
@@ -367,7 +375,7 @@ function reaction_buttons_submenu() {
 		$error = "";
 
 		// save the different settings (boolean, text, array of bool)
-		foreach ( array('activate', 'usecss') as $val ) {
+		foreach ( array('activate', 'usecss', 'usecookies') as $val ) {
 			if ( isset($_POST[$val]) && $_POST[$val] )
 				update_option('reaction_buttons_'.$val,true);
 			else
@@ -483,6 +491,14 @@ function reaction_buttons_submenu() {
 					</th>
 					<td>
 						<input type="checkbox" name="usecss" <?php checked( get_option('reaction_buttons_usecss'), true ); ?> /> <?php _e("Use the Reaction Buttons stylesheet?", "reaction_buttons"); ?>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row" valign="top">
+						<?php _e("Use Cookies:", "reaction_buttons"); ?>
+					</th>
+					<td>
+						<input type="checkbox" name="usecookies" <?php checked( get_option('reaction_buttons_usecookies'), true ); ?> /> <?php _e("Use Cookies to make it harder to vote twice?", "reaction_buttons"); ?>
 					</td>
 				</tr>
 				<tr>
