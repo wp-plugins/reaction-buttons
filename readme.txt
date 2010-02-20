@@ -2,7 +2,7 @@
 Tags: button, comment, posts
 Requires at least: 2.9.1
 Tested up to: 2.9.1
-Stable tag: 0.9.1
+Stable tag: 0.9.2
 
 Adds Buttons for very simple and fast feedback to your post. Inspired by Blogger.
 
@@ -31,6 +31,9 @@ No. :-)
 1. Shows a german default installation with Reaction Buttons and some clicks on them.
 
 == Changelog ==
+
+= 0.9.2 =
+* Added the possibility to activate cookies in the backend, so that you can only vote once on that browser. (Anyone with malicios intent can circumvent that pretty easily of course...)
 
 = 0.9.1 =
 * fixed issues with spaces
