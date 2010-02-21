@@ -181,7 +181,7 @@ function reaction_buttons_clean_old_button_names(){
 	$delete_meta_ids = array();
 
 	// get the Reaction Buttons datat out of the db
-	$reactions = $wpdb->get_results("SELECT meta_id,meta_key FROM " . $wpdb->prefix . "postmeta where meta_key like '_reaction_buttons%'");
+	$reactions = $wpdb->get_results("SELECT meta_id,meta_key FROM $table where meta_key like '_reaction_buttons%'");
 	
 	// check what records can be deleted
 	foreach ($reactions as $reaction){
@@ -532,5 +532,36 @@ function reaction_buttons_filter_plugin_actions( $links, $file ){
 	return $links;
 }
 add_filter( 'plugin_action_links', 'reaction_buttons_filter_plugin_actions', 10, 2 );
+
+function reaction_buttons_widget() {
+	global $wpdb;
+	$table = $wpdb->prefix . "postmeta";
+	$buttons = explode(",", preg_replace("/,\s+/", ",", get_option('reaction_buttons_button_names')));
+	$widget = "";
+
+	$widget .= "<h2 class='widgettitle'>" . __("Reaction Buttons", 'reaction_buttons') . "</h2>";
+
+	foreach($buttons as $button){
+		$posts = $wpdb->get_results("SELECT post_id,meta_value FROM $table WHERE " .
+			"meta_key = '_reaction_buttons_$button' ORDER BY meta_value DESC LIMIT 3");
+		$widget .= "<strong>$button</strong><br/><ul>";
+		foreach($posts as $postdb){
+			$post = get_post(intval($postdb->post_id));
+			$count = intval($postdb->meta_value);
+			$widget .= "<li><a href='" . get_permalink($post->ID) . "'>" . $post->post_title . " ($count)</a></li>";
+		}
+		$widget .= "</ul>";
+		
+	}
+
+	
+	
+	echo $widget;
+}
+
+function reaction_buttons_init_widget() {
+	register_sidebar_widget(__('Reaction Buttons', 'reaction_buttons'), 'reaction_buttons_widget');    
+}
+add_action("plugins_loaded", "reaction_buttons_init_widget");
 
 ?>
