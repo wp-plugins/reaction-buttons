@@ -5,7 +5,7 @@
    Description: Adds Buttons for very simple and fast feedback to your post. Inspired by Blogger.
    Version: 0.9.2
    Author: Jakob Lenfers
-   // Author URI: http://blog.jl42.de
+   Author URI: http://blog.jl42.de
 
    I used the sociable plugin as template.
 
@@ -417,7 +417,7 @@ function reaction_buttons_submenu() {
 
 		// done saving
 		if ( $error ) {
-			$error = $error . __("Some settings couldn't be saved. More details in the error message below:<br />", 'reaction_buttons');
+			$error = __("Some settings couldn't be saved. More details in the error message below:<br />", 'reaction_buttons') . $error;
 			reaction_buttons_message($error);
 		}
 		else {
@@ -517,7 +517,7 @@ function reaction_buttons_submenu() {
 
 
 /**
- * Add a settings link to the Plugins page, so people can go straight from the plugin page to the
+ * Add a settings link to the plugins page, so people can go straight from the plugin page to the
  * settings page.
  */
 function reaction_buttons_filter_plugin_actions( $links, $file ){
@@ -533,34 +533,76 @@ function reaction_buttons_filter_plugin_actions( $links, $file ){
 }
 add_filter( 'plugin_action_links', 'reaction_buttons_filter_plugin_actions', 10, 2 );
 
+/**
+ * A widget that displays the posts with the most clicks for each button.
+ */
 function reaction_buttons_widget() {
 	global $wpdb;
 	$table = $wpdb->prefix . "postmeta";
+	// get the buttons from the options
 	$buttons = explode(",", preg_replace("/,\s+/", ",", get_option('reaction_buttons_button_names')));
-	$widget = "";
+	// how many posts to show per button?
+	$limit_posts = get_option('reaction_buttons_widget_count');
+	if (!(is_numeric($limit_posts) && 0 < intval($limit_posts))) $limit_posts = "3";
+	// gather the output
+	$widget = "<div class='widget_reaction_buttons widget'>";
+	$widget .= "<h2 class='widgettitle'>" . get_option('reaction_buttons_widget_title') . "</h2>";
 
-	$widget .= "<h2 class='widgettitle'>" . __("Reaction Buttons", 'reaction_buttons') . "</h2>";
-
+	// get all buttons and get the top $limit_posts for those buttons
 	foreach($buttons as $button){
 		$posts = $wpdb->get_results("SELECT post_id,meta_value FROM $table WHERE " .
-			"meta_key = '_reaction_buttons_$button' ORDER BY meta_value DESC LIMIT 3");
-		$widget .= "<strong>$button</strong><br/><ul>";
+			"meta_key = '_reaction_buttons_$button' ORDER BY meta_value DESC LIMIT $limit_posts");
+		$widget .= "<h3>$button</h3><ol>";
 		foreach($posts as $postdb){
 			$post = get_post(intval($postdb->post_id));
 			$count = intval($postdb->meta_value);
 			$widget .= "<li><a href='" . get_permalink($post->ID) . "'>" . $post->post_title . " ($count)</a></li>";
 		}
-		$widget .= "</ul>";
+		$widget .= "</ol>";
 		
 	}
 
 	
-	
+	$widget .= "</div>";
 	echo $widget;
 }
 
+/**
+ * Add settings to the widget page
+ */
+function reaction_buttons_widget_control(){
+	echo "<p>" . __("This widget shows the posts with the most clicks for each button.", 'reaction_buttons') . "</p>";
+	
+	// show the current settings and the dialog
+	?>
+	<p><label><?php _e("Title:", 'reaction_buttons') ?><br />
+	<input name="reaction_buttons_widget_title" type="text" value="<?php echo get_option('reaction_buttons_widget_title') ?>" /></label></p>
+	<p><label><?php _e("How many posts to show:", 'reaction_buttons') ?><br />
+	<input name="reaction_buttons_widget_count" type="text" value="<?php echo get_option('reaction_buttons_widget_count'); ?>" /></label></p>
+
+	<?php
+	// validate the input and update the settings
+	if (isset($_POST['reaction_buttons_widget_title'])){
+		update_option('reaction_buttons_widget_title', attribute_escape($_POST['reaction_buttons_widget_title']));
+	}
+
+	if (isset($_POST['reaction_buttons_widget_count'])){
+		$count = $_POST['reaction_buttons_widget_count'];
+		if (is_numeric($count) && 0 < intval($count)) {
+			update_option('reaction_buttons_widget_count', attribute_escape($count));
+		}
+		else {
+			reaction_buttons_message(__("Please input a positiv number!", 'reaction_buttons'));
+		}
+	}
+}
+
+/**
+ * register the widget functions
+ */
 function reaction_buttons_init_widget() {
 	register_sidebar_widget(__('Reaction Buttons', 'reaction_buttons'), 'reaction_buttons_widget');    
+    register_widget_control(__('Reaction Buttons', 'reaction_buttons'), 'reaction_buttons_widget_control');
 }
 add_action("plugins_loaded", "reaction_buttons_init_widget");
 
