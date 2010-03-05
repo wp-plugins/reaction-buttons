@@ -470,7 +470,6 @@ function reaction_buttons_submenu() {
 					</th>
 					<td>
 						<?php _e("Chose the pages on which to display the reaction buttons.", 'reaction_buttons'); ?><br/>
-						<br/>
 						<?php
 							// Load conditions under which Reaction Buttons displays
 							$conditionals	= get_option('reaction_buttons_conditionals');
@@ -490,7 +489,8 @@ function reaction_buttons_submenu() {
 						<?php _e("Use CSS:", "reaction_buttons"); ?>
 					</th>
 					<td>
-						<input type="checkbox" name="usecss" <?php checked( get_option('reaction_buttons_usecss'), true ); ?> /> <?php _e("Use the Reaction Buttons stylesheet?", "reaction_buttons"); ?>
+						<input type="checkbox" name="usecss" <?php checked( get_option('reaction_buttons_usecss'), true ); ?> /> <?php _e("Use the Reaction Buttons stylesheet?", "reaction_buttons"); ?><br />
+						If you want to customize the look of Reaction Buttons, copy the content of the <a href="<?php echo $reaction_buttons_plugin_path?>reaction_buttons.css" target="_blank">reaction_buttons.css</a> into your css and disable this option.
 					</td>
 				</tr>
 				<tr>
@@ -498,7 +498,7 @@ function reaction_buttons_submenu() {
 						<?php _e("Use Cookies:", "reaction_buttons"); ?>
 					</th>
 					<td>
-						<input type="checkbox" name="usecookies" <?php checked( get_option('reaction_buttons_usecookies'), true ); ?> /> <?php _e("Use Cookies to make it harder to vote twice?", "reaction_buttons"); ?>
+						<input type="checkbox" name="usecookies" <?php checked( get_option('reaction_buttons_usecookies'), true ); ?> /> <?php _e("Use cookies to make it harder to vote twice?", "reaction_buttons"); ?>
 					</td>
 				</tr>
 				<tr>
@@ -543,22 +543,30 @@ function reaction_buttons_widget() {
 	$buttons = explode(",", preg_replace("/,\s+/", ",", get_option('reaction_buttons_button_names')));
 	// how many posts to show per button?
 	$limit_posts = get_option('reaction_buttons_widget_count');
-	if (!(is_numeric($limit_posts) && 0 < intval($limit_posts))) $limit_posts = "3";
+	if (!(is_numeric($limit_posts) && 0 < intval($limit_posts))) $limit_posts = 3;
+	if(intval($limit_posts) == 1) $only_one = true;
+	// get title or set default title
+	$title = get_option('reaction_buttons_widget_title');
+	if (empty($title)) $title = __("Most clicked buttons", 'reaction_buttons');
+
 	// gather the output
 	$widget = "<div class='widget_reaction_buttons widget'>";
-	$widget .= "<h2 class='widgettitle'>" . get_option('reaction_buttons_widget_title') . "</h2>";
+	$widget .= "<h2 class='widgettitle'>" . $title . "</h2>";
 
 	// get all buttons and get the top $limit_posts for those buttons
 	foreach($buttons as $button){
 		$posts = $wpdb->get_results("SELECT post_id,meta_value FROM $table WHERE " .
 			"meta_key = '_reaction_buttons_$button' ORDER BY meta_value DESC LIMIT $limit_posts");
-		$widget .= "<h3>$button</h3><ol>";
+		$widget .= "<h3>$button</h3>";
+		if(!$only_one) $widget .= "<ol>";
 		foreach($posts as $postdb){
 			$post = get_post(intval($postdb->post_id));
 			$count = intval($postdb->meta_value);
-			$widget .= "<li><a href='" . get_permalink($post->ID) . "'>" . $post->post_title . " ($count)</a></li>";
+			if(!$only_one) $widget .= "<li>";
+			$widget .= "<a href='" . get_permalink($post->ID) . "'>" . $post->post_title . "&nbsp;($count)</a>";
+			if(!$only_one) $widget .= "</li>";
 		}
-		$widget .= "</ol>";
+		if(!$only_one) $widget .= "</ol>";
 		
 	}
 
