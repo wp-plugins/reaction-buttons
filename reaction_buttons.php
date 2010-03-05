@@ -3,7 +3,7 @@
    Plugin Name: Reaction Buttons
    Plugin URI: http://blog.jl42.de/reaction-buttons/
    Description: Adds Buttons for very simple and fast feedback to your post. Inspired by Blogger.
-   Version: 0.9.1
+   Version: 0.9.2
    Author: Jakob Lenfers
    Author URI: http://blog.jl42.de
 
@@ -30,7 +30,7 @@
 $reaction_buttons_plugin_path = WP_CONTENT_URL.'/plugins/'.plugin_basename(dirname(__FILE__)).'/';
 
 /**
- *
+ * Quote the button name, so that JQuery works
  */
 function prepare_js_jl($str) {
 	return str_replace("'", "\\\\'", esc_js(trim($str)));
@@ -38,7 +38,7 @@ function prepare_js_jl($str) {
 
 
 /**
- *
+ * Replace spaces with three underscores for class names
  */
 function prepare_attr_jl($str) {
 	return esc_attr(str_replace(" ", "___", stripslashes(trim($str))));
@@ -52,9 +52,16 @@ function reaction_buttons_html() {
 	if (get_post_meta(get_the_ID(),'_reaction_buttons_off',true) or !get_option(reaction_buttons_activate)) {
 		return "";
 	}
+	
+	$post_id = get_the_ID();
+	if(get_option(reaction_buttons_usecookies)){
+		$json = stripslashes($_COOKIE["reaction_buttons_" . $post_id]);
+		$cookie = json_decode($json, true);
+	}
+	if(!is_array($cookie)) $cookie = array();
 
 	// Start preparing the output
-	$html = "\n<div id='reaction_buttons_post" . get_the_ID() . "' class='reaction_buttons'>\n";
+	$html = "\n<div id='reaction_buttons_post" . $post_id . "' class='reaction_buttons'>\n";
 
 	 // If a tagline is set, display it above the buttons
 	 $tagline = get_option("reaction_buttons_tagline");
@@ -69,10 +76,17 @@ function reaction_buttons_html() {
 	
 	// print every button
 	foreach($buttons as $button){
-		$count = intval(get_post_meta(get_the_ID(), "_reaction_buttons_" . stripslashes(trim($button)), true));
-		$html .= "<span class='reaction_button_" . prepare_attr_jl($button) .
-			"_count' onclick=\"reaction_buttons_increment_button_ajax('" . get_the_ID() . "', '" .
-			prepare_js_jl($button) . "');\">" . stripslashes(trim($button)) . "&nbsp;<span>(" . $count . ")</span></span> ";
+		$clean_button = stripslashes(trim($button));
+		$count = intval(get_post_meta(get_the_ID(), "_reaction_buttons_" . $clean_button, true));
+		$html .= "<span class='reaction_button_" . prepare_attr_jl($button) . "_count";
+		if (array_key_exists(addslashes($clean_button), $cookie) && $cookie[addslashes($clean_button)]) {
+			$html .= " voted'>";
+		}
+		else {
+			$html .= "' onclick=\"reaction_buttons_increment_button_ajax('" . get_the_ID() . "', '" .
+			prepare_js_jl($button) . "');\"'>";
+		}
+		$html .= $clean_button . "&nbsp;<span>(" . $count . ")</span></span> ";
 	}
 	$html .= "</div>\n";
 
@@ -151,6 +165,9 @@ function reaction_buttons_restore_config($force=false) {
 		update_option('reaction_buttons_usecss', true);
 	}
 
+	if ( $force or !( get_option('reaction_buttons_usecookies')) ) {
+		update_option('reaction_buttons_usecookies', false);
+	}
 }
 
 /**
@@ -164,7 +181,7 @@ function reaction_buttons_clean_old_button_names(){
 	$delete_meta_ids = array();
 
 	// get the Reaction Buttons datat out of the db
-	$reactions = $wpdb->get_results("SELECT meta_id,meta_key FROM " . $wpdb->prefix . "postmeta where meta_key like '_reaction_buttons%'");
+	$reactions = $wpdb->get_results("SELECT meta_id,meta_key FROM $table where meta_key like '_reaction_buttons%'");
 	
 	// check what records can be deleted
 	foreach ($reactions as $reaction){
@@ -199,27 +216,35 @@ add_action('wp_print_styles', 'reaction_buttons_css');
 function reaction_buttons_js_header() {
 	$nonce = wp_create_nonce( 'reaction_buttons' );
 	?>
-	<script	 type='text/javascript'><!--
+	<script	type='text/javascript'><!--
 	function prepare_attr_jl(str) {
 		return str.replace(" ", "___");
 	}
 	function reaction_buttons_increment_button_ajax(post_id, button){
 			jQuery.ajax({
-				type: "post",url: "<?php bloginfo( 'wpurl' ); ?>/wp-admin/admin-ajax.php",
-						data: { action: 'reaction_buttons_increment_button_php', post_id: post_id, button: button, _ajax_nonce: '<?php echo $nonce; ?>' },
-						success: function(html){
+				type: "post",url: "<?php bloginfo( 'wpurl' ); ?>/wp-admin/admin-ajax.php", dataType: 'json',
+					data: { action: 'reaction_buttons_increment_button_php', post_id: post_id, button: button, _ajax_nonce: '<?php echo $nonce; ?>' },
+					success: function(data){
+						if(data['cookie']){
+							// Set the cookie, which expires after 3 days. Hope that helps to circumvent
+							// the problem that browsers only have to save 30 cookies per domain.
+							jQuery.cookie("reaction_buttons_" + post_id, JSON.stringify(data['cookie']), {expires: 3});
+						}
 						jQuery("#reaction_buttons_post" + post_id + " span.reaction_button_" + prepare_attr_jl(button) + "_count").removeAttr('onclick');
-						jQuery("#reaction_buttons_post" + post_id + " span.reaction_button_" + prepare_attr_jl(button) + "_count span").html(html);
+						jQuery("#reaction_buttons_post" + post_id + " span.reaction_button_" + prepare_attr_jl(button) + "_count span").html("("+data['count']+")");
 						jQuery("#reaction_buttons_post" + post_id + " span.reaction_button_" + prepare_attr_jl(button) + "_count").addClass('voted');
 					}
 			});
 		}
 	--></script>
+	<script type='text/javascript' src='<?php echo WP_CONTENT_URL.'/plugins/'.plugin_basename(dirname(__FILE__)) . '/jquery.cookie.js'; ?>'></script>
 	<?php
+	
 }
 
 // add the javascript stuff
 wp_enqueue_script("jquery");
+wp_enqueue_script("json2");
 add_action('wp_head', 'reaction_buttons_js_header' );
 add_action('wp_ajax_reaction_buttons_increment_button_php', 'reaction_buttons_increment_button_php', 1, 2);
 add_action('wp_ajax_nopriv_reaction_buttons_increment_button_php', 'reaction_buttons_increment_button_php', 1, 2);
@@ -234,18 +259,35 @@ function reaction_buttons_increment_button_php(){
 	if(!$_POST['post_id'] || !$_POST['button']) die();
 	$post_id = intval($_POST['post_id']);
 	$button = stripslashes($_POST['button']);
+	$result = array();
 
 	// get all the buttons, stripped of whitespaces
 	$buttons = explode(",", preg_replace("/,\s/", ",", get_option('reaction_buttons_button_names')));
-	// if the ajax submitted a button which isn't in the config, don't do anything
+	// if the ajax request submitted a button which isn't in the config, don't do anything
 	if(!in_array($button, $buttons)) die();
 
 	// get old button value and update it
 	$current = intval(get_post_meta($post_id, "_reaction_buttons_" . stripslashes($button), true));
 	update_post_meta($post_id, "_reaction_buttons_" . stripslashes($button), ++$current);
 
+	if(get_option(reaction_buttons_usecookies)){
+		if ( $_COOKIE["reaction_buttons"] ) {
+			$json = stripslashes($_COOKIE["reaction_buttons_" . $post_id]);
+			$cookie = json_decode($json, true);
+			if(!is_array($cookie)) $cookie = array();
+		}
+		else {
+			$cookie = array();
+		}
+		
+		$cookie[$button] = true;
+		$result['cookie'] = $cookie;
+	}
+	
+	$result['count'] = $current;
+
 	// return the new value, so that the js can insert it into the blog
-	echo "($current)";
+	echo json_encode($result);
 	die();
 }
 
@@ -333,7 +375,7 @@ function reaction_buttons_submenu() {
 		$error = "";
 
 		// save the different settings (boolean, text, array of bool)
-		foreach ( array('activate', 'usecss') as $val ) {
+		foreach ( array('activate', 'usecss', 'usecookies') as $val ) {
 			if ( isset($_POST[$val]) && $_POST[$val] )
 				update_option('reaction_buttons_'.$val,true);
 			else
@@ -375,7 +417,7 @@ function reaction_buttons_submenu() {
 
 		// done saving
 		if ( $error ) {
-			$error = $error . __("Some settings couldn't be saved. More details in the error message below:<br />", 'reaction_buttons');
+			$error = __("Some settings couldn't be saved. More details in the error message below:<br />", 'reaction_buttons') . $error;
 			reaction_buttons_message($error);
 		}
 		else {
@@ -452,6 +494,14 @@ function reaction_buttons_submenu() {
 					</td>
 				</tr>
 				<tr>
+					<th scope="row" valign="top">
+						<?php _e("Use Cookies:", "reaction_buttons"); ?>
+					</th>
+					<td>
+						<input type="checkbox" name="usecookies" <?php checked( get_option('reaction_buttons_usecookies'), true ); ?> /> <?php _e("Use Cookies to make it harder to vote twice?", "reaction_buttons"); ?>
+					</td>
+				</tr>
+				<tr>
 					<td>&nbsp;</td>
 					<td>
 						<span class="submit"><input name="save" value="<?php _e("Save Changes", 'reaction_buttons'); ?>" type="submit" /></span>
@@ -467,7 +517,7 @@ function reaction_buttons_submenu() {
 
 
 /**
- * Add a settings link to the Plugins page, so people can go straight from the plugin page to the
+ * Add a settings link to the plugins page, so people can go straight from the plugin page to the
  * settings page.
  */
 function reaction_buttons_filter_plugin_actions( $links, $file ){
@@ -482,5 +532,78 @@ function reaction_buttons_filter_plugin_actions( $links, $file ){
 	return $links;
 }
 add_filter( 'plugin_action_links', 'reaction_buttons_filter_plugin_actions', 10, 2 );
+
+/**
+ * A widget that displays the posts with the most clicks for each button.
+ */
+function reaction_buttons_widget() {
+	global $wpdb;
+	$table = $wpdb->prefix . "postmeta";
+	// get the buttons from the options
+	$buttons = explode(",", preg_replace("/,\s+/", ",", get_option('reaction_buttons_button_names')));
+	// how many posts to show per button?
+	$limit_posts = get_option('reaction_buttons_widget_count');
+	if (!(is_numeric($limit_posts) && 0 < intval($limit_posts))) $limit_posts = "3";
+	// gather the output
+	$widget = "<div class='widget_reaction_buttons widget'>";
+	$widget .= "<h2 class='widgettitle'>" . get_option('reaction_buttons_widget_title') . "</h2>";
+
+	// get all buttons and get the top $limit_posts for those buttons
+	foreach($buttons as $button){
+		$posts = $wpdb->get_results("SELECT post_id,meta_value FROM $table WHERE " .
+			"meta_key = '_reaction_buttons_$button' ORDER BY meta_value DESC LIMIT $limit_posts");
+		$widget .= "<h3>$button</h3><ol>";
+		foreach($posts as $postdb){
+			$post = get_post(intval($postdb->post_id));
+			$count = intval($postdb->meta_value);
+			$widget .= "<li><a href='" . get_permalink($post->ID) . "'>" . $post->post_title . " ($count)</a></li>";
+		}
+		$widget .= "</ol>";
+		
+	}
+
+	
+	$widget .= "</div>";
+	echo $widget;
+}
+
+/**
+ * Add settings to the widget page
+ */
+function reaction_buttons_widget_control(){
+	echo "<p>" . __("This widget shows the posts with the most clicks for each button.", 'reaction_buttons') . "</p>";
+	
+	// show the current settings and the dialog
+	?>
+	<p><label><?php _e("Title:", 'reaction_buttons') ?><br />
+	<input name="reaction_buttons_widget_title" type="text" value="<?php echo get_option('reaction_buttons_widget_title') ?>" /></label></p>
+	<p><label><?php _e("How many posts to show:", 'reaction_buttons') ?><br />
+	<input name="reaction_buttons_widget_count" type="text" value="<?php echo get_option('reaction_buttons_widget_count'); ?>" /></label></p>
+
+	<?php
+	// validate the input and update the settings
+	if (isset($_POST['reaction_buttons_widget_title'])){
+		update_option('reaction_buttons_widget_title', attribute_escape($_POST['reaction_buttons_widget_title']));
+	}
+
+	if (isset($_POST['reaction_buttons_widget_count'])){
+		$count = $_POST['reaction_buttons_widget_count'];
+		if (is_numeric($count) && 0 < intval($count)) {
+			update_option('reaction_buttons_widget_count', attribute_escape($count));
+		}
+		else {
+			reaction_buttons_message(__("Please input a positiv number!", 'reaction_buttons'));
+		}
+	}
+}
+
+/**
+ * register the widget functions
+ */
+function reaction_buttons_init_widget() {
+	register_sidebar_widget(__('Reaction Buttons', 'reaction_buttons'), 'reaction_buttons_widget');    
+    register_widget_control(__('Reaction Buttons', 'reaction_buttons'), 'reaction_buttons_widget_control');
+}
+add_action("plugins_loaded", "reaction_buttons_init_widget");
 
 ?>
