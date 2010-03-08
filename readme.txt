@@ -1,8 +1,8 @@
 === Reaction Buttons ===
 Tags: button, comment, posts
 Requires at least: 2.9.1
-Tested up to: 2.9.1
-Stable tag: 0.9.1
+Tested up to: 2.9.2
+Stable tag: 0.9.4.1
 
 Adds Buttons for very simple and fast feedback to your post. Inspired by Blogger.
 
@@ -29,8 +29,22 @@ No. :-)
 == Screenshots ==
 
 1. Shows a german default installation with Reaction Buttons and some clicks on them.
+2. Shows the sidebar widget with some dummy data.
 
 == Changelog ==
+
+= 0.9.4.1 =
+* fixed a bug in the widget, sorting was screwed
+
+= 0.9.4 =
+* bugfixes and cleanup on the widget
+* small cleanups in the settings
+
+= 0.9.3 (beta) =
+* added a widget, that shows the posts with the most clicks for each button.
+
+= 0.9.2 =
+* Added the possibility to activate cookies in the backend, so that you can only vote once on that browser. (Anyone with malicios intent can circumvent that pretty easily of course...)
 
 = 0.9.1 =
 * fixed issues with spaces

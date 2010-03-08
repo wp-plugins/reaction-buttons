@@ -16,3 +16,12 @@ div.reaction_buttons > span:hover {
     background-color: #0F6;
 }
 
+#sidebar div.widget_reaction_buttons h3 {
+	margin: 0;
+	margin-top: 4px;
+	font-size: 1.1em;
+}
+
+#sidebar div.widget_reaction_buttons ol {
+	margin-left: 25px;
+}
