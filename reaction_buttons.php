@@ -3,7 +3,7 @@
    Plugin Name: Reaction Buttons
    Plugin URI: http://blog.jl42.de/reaction-buttons/
    Description: Adds Buttons for very simple and fast feedback to your post. Inspired by Blogger.
-   Version: 0.9.4
+   Version: 0.9.4.1
    Author: Jakob Lenfers
    Author URI: http://blog.jl42.de
 
@@ -556,7 +556,7 @@ function reaction_buttons_widget() {
 	// get all buttons and get the top $limit_posts for those buttons
 	foreach($buttons as $button){
 		$posts = $wpdb->get_results("SELECT post_id,meta_value FROM $table WHERE " .
-			"meta_key = '_reaction_buttons_$button' ORDER BY meta_value DESC LIMIT $limit_posts");
+			"meta_key = '_reaction_buttons_$button' ORDER BY CAST(meta_value AS UNSIGNED) DESC LIMIT $limit_posts");
 		$widget .= "<h3>$button</h3>";
 		if(!$only_one) $widget .= "<ol>";
 		foreach($posts as $postdb){

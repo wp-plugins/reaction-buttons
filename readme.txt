@@ -2,7 +2,7 @@
 Tags: button, comment, posts
 Requires at least: 2.9.1
 Tested up to: 2.9.2
-Stable tag: 0.9.4
+Stable tag: 0.9.4.1
 
 Adds Buttons for very simple and fast feedback to your post. Inspired by Blogger.
 
@@ -32,6 +32,9 @@ No. :-)
 2. Shows the sidebar widget with some dummy data.
 
 == Changelog ==
+
+= 0.9.4.1 =
+* fixed a bug in the widget, sorting was screwed
 
 = 0.9.4 =
 * bugfixes and cleanup on the widget
