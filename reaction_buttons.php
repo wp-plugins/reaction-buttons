@@ -3,7 +3,7 @@
    Plugin Name: Reaction Buttons
    Plugin URI: http://blog.jl42.de/reaction-buttons/
    Description: Adds Buttons for very simple and fast feedback to your post. Inspired by Blogger.
-   Version: 0.9.4.1
+   Version: 0.9.5
    Author: Jakob Lenfers
    Author URI: http://blog.jl42.de
 
@@ -97,27 +97,42 @@ function reaction_buttons_html() {
 /**
  * Hook the_content to output html if we should display on any page
  */
-$reaction_buttons_contitionals = get_option('reaction_buttons_conditionals');
-if (is_array($reaction_buttons_contitionals) and in_array(true, $reaction_buttons_contitionals)) {
-	add_filter('the_content', 'reaction_buttons_display_hook');
-	add_filter('the_excerpt', 'reaction_buttons_display_hook');
-	
-	/**
-	 * Loop through the settings and check whether Sociable should be outputted.
-	 */
-	function reaction_buttons_display_hook($content='') {
-		$conditionals = get_option('reaction_buttons_conditionals');
-		if ((is_home()	   and $conditionals['is_home']) or
-		    (is_single()   and $conditionals['is_single']) or
-		    (is_page()	   and $conditionals['is_page']) or
-		    (is_category() and $conditionals['is_category']) or
-		    (is_tag()	   and $conditionals['is_tag']) or
-		    (is_date()	   and $conditionals['is_date']) or
-		    (is_author()   and $conditionals['is_author']) or
-		    (is_search()   and $conditionals['is_search'])) {
-			$content .= reaction_buttons_html();
+$reaction_buttons_conditionals = get_option('reaction_buttons_conditionals');
+$reaction_buttons_position_settings = get_option('reaction_buttons_position_settings');
+if (is_array($reaction_buttons_conditionals) and in_array(true, $reaction_buttons_conditionals) and
+    is_array($reaction_buttons_position_settings) and in_array(true, $reaction_buttons_position_settings)) {
+	if ($reaction_buttons_position_settings['after'] or $reaction_buttons_position_settings['before']) {
+		add_filter('the_content', 'reaction_buttons_display_hook');
+		add_filter('the_excerpt', 'reaction_buttons_display_hook');
+		
+		/**
+		 * Loop through the settings and check whether reaction buttons should be outputted.
+		 */
+		function reaction_buttons_display_hook($content='') {
+			$conditionals = get_option('reaction_buttons_conditionals');
+			$position_settings = get_option('reaction_buttons_position_settings');
+			if ((is_home()	   and $conditionals['is_home']) or
+			    (is_single()   and $conditionals['is_single']) or
+			    (is_page()	   and $conditionals['is_page']) or
+			    (is_category() and $conditionals['is_category']) or
+			    (is_tag()	   and $conditionals['is_tag']) or
+			    (is_date()	   and $conditionals['is_date']) or
+			    (is_author()   and $conditionals['is_author']) or
+			    (is_search()   and $conditionals['is_search'])) {
+				// check whether to put them before or after the post (or both)
+				if($position_settings['before']){
+					$content = reaction_buttons_html() . $content;
+				}
+				if($position_settings['after']){
+					$content .= reaction_buttons_html();
+				}
+			}
+			return $content;
 		}
-		return $content;
+	}
+
+	if ($reaction_buttons_position_settings['shortcode']) {
+		add_shortcode('reaction_buttons', 'reaction_buttons_html');
 	}
  }
 
@@ -137,6 +152,25 @@ register_activation_hook(__FILE__, 'reaction_buttons_activation_hook');
  */
 function reaction_buttons_restore_config($force=false) {
 
+	if ( $force or ( get_option('reaction_buttons_activate', "NOTSET") == "NOTSET") ) {
+		update_option('reaction_buttons_activate', true);
+	}
+	
+	if ($force or !is_array(get_option('reaction_buttons_position_settings')))
+		update_option('reaction_buttons_position_settings',
+		              array('after' => True,
+		                    'before' => False,
+		                    'shortcode' => False
+		                    ));
+
+	if ( $force or !( get_option('reaction_buttons_tagline')) ) {
+		update_option('reaction_buttons_tagline', "What do you think of this post?");
+	}
+
+	if ( $force or !( get_option('reaction_buttons_button_names')) ) {
+		update_option('reaction_buttons_button_names', "Awesome, Interesting, Useful, Boring, Sucks");
+	}
+
 	if ($force or !is_array(get_option('reaction_buttons_conditionals')))
 		update_option('reaction_buttons_conditionals',
 		              array('is_home' => True,
@@ -149,19 +183,7 @@ function reaction_buttons_restore_config($force=false) {
 		                    'is_author' => False,
 		                    ));
 
-	if ( $force or !( get_option('reaction_buttons_activate')) ) {
-		update_option('reaction_buttons_activate', true);
-	}
-	
-	if ( $force or !( get_option('reaction_buttons_tagline')) ) {
-		update_option('reaction_buttons_tagline', "What do you think of this post?");
-	}
-
-	if ( $force or !( get_option('reaction_buttons_button_names')) ) {
-		update_option('reaction_buttons_button_names', "Awesome, Interesting, Useful, Boring, Sucks");
-	}
-
-	if ( $force or !( get_option('reaction_buttons_usecss')) ) {
+	if ( $force or ( get_option('reaction_buttons_usecss', "NOTSET") == "NOTSET" ) ) {
 		update_option('reaction_buttons_usecss', true);
 	}
 
@@ -402,14 +424,22 @@ function reaction_buttons_submenu() {
 		}
 	
 		
+		$position_settings = Array();
+		if (!$_POST['position_settings'])
+			$_POST['position_settings'] = Array();
+		
+		$curposition_settings = get_option('reaction_buttons_position_settings');
+		foreach($curposition_settings as $condition=>$toggled)
+			$position_settings[$condition] = array_key_exists($condition, $_POST['position_settings']);
+			
+		update_option('reaction_buttons_position_settings', $position_settings);
+
+
 		$conditionals = Array();
 		if (!$_POST['conditionals'])
 			$_POST['conditionals'] = Array();
 		
 		$curconditionals = get_option('reaction_buttons_conditionals');
-		if (!array_key_exists('is_feed',$curconditionals)) {
-			$curconditionals['is_feed'] = false;
-		}
 		foreach($curconditionals as $condition=>$toggled)
 			$conditionals[$condition] = array_key_exists($condition, $_POST['conditionals']);
 			
@@ -448,6 +478,23 @@ function reaction_buttons_submenu() {
 				</tr>	
 				<tr>
 					<th scope="row" valign="top">
+						<?php _e("Position in the post:", "reaction_buttons"); ?>
+					</th>
+					<td>
+						<?php _e("Where should the reaction buttons appear?", 'reaction_buttons'); ?><br/>
+						<?php _e('(The default "after the post" should work well for most blogs.)', 'reaction_buttons'); ?><br/>
+						<?php
+							// Load conditions under which Reaction Buttons displays
+							$position_settings = get_option('reaction_buttons_position_settings');
+						?>
+						<input type="checkbox" name="position_settings[after]"<?php checked($position_settings['after']); ?> /> <?php _e("Place the reaction buttons after the post", 'reaction_buttons'); ?><br/>
+						<input type="checkbox" name="position_settings[before]"<?php checked($position_settings['before']); ?> /> <?php _e("Place the reaction buttons above the post", 'reaction_buttons'); ?><br/>
+						<input type="checkbox" name="position_settings[shortcode]"<?php checked($position_settings['shortcode']); ?> /> <?php _e("Activate the shortcode [reaction_buttons] to place them somewhere in your post.", 'reaction_buttons'); ?><br/>
+						<?php _e("You can also set the reaction buttons manually in your theme, by calling the function reaction_buttons_html(). But beware that it needs to be inside of <a href='http://codex.wordpress.org/The_Loop'>The Loop</a>.", 'reaction_buttons'); ?><br/>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row" valign="top">
 						<?php _e("Tagline:", "reaction_buttons"); ?>
 					</th>
 					<td>
@@ -466,7 +513,7 @@ function reaction_buttons_submenu() {
 				</tr>
 				<tr>
 					<th scope="row" valign="top">
-						<?php _e("Position:", "reaction_buttons"); ?>
+						<?php _e("Page types:", "reaction_buttons"); ?>
 					</th>
 					<td>
 						<?php _e("Chose the pages on which to display the reaction buttons.", 'reaction_buttons'); ?><br/>
