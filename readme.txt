@@ -2,7 +2,7 @@
 Tags: button, comment, posts
 Requires at least: 2.9.1
 Tested up to: 2.9.2
-Stable tag: 0.9.5
+Stable tag: 0.9.5.1
 
 Adds Buttons for very simple and fast feedback to your post. Inspired by Blogger.
 
@@ -32,6 +32,8 @@ No. :-)
 2. Shows the sidebar widget with some dummy data.
 
 == Changelog ==
+= 0.9.5.1 =
+* removed the possibility to multi vote by clicking really fast (before the ajax response came in)
 
 = 0.9.5 =
 * added the shortcode [reaction_buttons] (can be activated in the config)

@@ -3,7 +3,7 @@
    Plugin Name: Reaction Buttons
    Plugin URI: http://blog.jl42.de/reaction-buttons/
    Description: Adds Buttons for very simple and fast feedback to your post. Inspired by Blogger.
-   Version: 0.9.5
+   Version: 0.9.5.1
    Author: Jakob Lenfers
    Author URI: http://blog.jl42.de
 
@@ -243,7 +243,10 @@ function reaction_buttons_js_header() {
 		return str.replace(" ", "___");
 	}
 	function reaction_buttons_increment_button_ajax(post_id, button){
-			jQuery.ajax({
+		// remove the onclick attribute before sending the request to make
+		// sure none votes more than once by clicking ten times fast
+		jQuery("#reaction_buttons_post" + post_id + " span.reaction_button_" + prepare_attr_jl(button) + "_count").removeAttr('onclick');
+		jQuery.ajax({
 				type: "post",url: "<?php bloginfo( 'wpurl' ); ?>/wp-admin/admin-ajax.php", dataType: 'json',
 					data: { action: 'reaction_buttons_increment_button_php', post_id: post_id, button: button, _ajax_nonce: '<?php echo $nonce; ?>' },
 					success: function(data){
@@ -252,7 +255,6 @@ function reaction_buttons_js_header() {
 							// the problem that browsers only have to save 30 cookies per domain.
 							jQuery.cookie("reaction_buttons_" + post_id, JSON.stringify(data['cookie']), {expires: 3});
 						}
-						jQuery("#reaction_buttons_post" + post_id + " span.reaction_button_" + prepare_attr_jl(button) + "_count").removeAttr('onclick');
 						jQuery("#reaction_buttons_post" + post_id + " span.reaction_button_" + prepare_attr_jl(button) + "_count span").html("("+data['count']+")");
 						jQuery("#reaction_buttons_post" + post_id + " span.reaction_button_" + prepare_attr_jl(button) + "_count").addClass('voted');
 					}
