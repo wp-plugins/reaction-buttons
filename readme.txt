@@ -1,8 +1,8 @@
 === Reaction Buttons ===
-Tags: button, comment, posts
+Tags: feedback, polls, button, comment
 Requires at least: 2.9.1
 Tested up to: 2.9.2
-Stable tag: 0.9.6
+Stable tag: 0.9.7
 
 Adds Buttons for very simple and fast feedback to your post. Inspired by Blogger.
 
@@ -32,6 +32,9 @@ No. :-)
 2. Shows the sidebar widget with some dummy data.
 
 == Changelog ==
+= 0.9.7 =
+* fixed a small error that prevented the ajax update in buttons with more than one whitespace.
+
 = 0.9.6 =
 * hopefully solves the [problem with mod_security](http://blog.jl42.de/reaction-buttons/comment-page-1/#comment-812) due to a filename with "cookie" in it... *sigh* 
 
@@ -66,3 +69,4 @@ No. :-)
 
 == Restrictions ==
 * There cannot be spaces in html classes, so the plugin wouldn't work if there would be buttons named "great article" *and* "great___article", because it converts the spaces into three underscores.
+* Also the addon (at least the ajax part) doesn't work with certain special chars like exclamation marks. If thats a problem for someone I can see if there is a way to fix it, for now I'm all right with it. :)
