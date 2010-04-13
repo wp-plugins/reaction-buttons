@@ -3,7 +3,7 @@
    Plugin Name: Reaction Buttons
    Plugin URI: http://blog.jl42.de/reaction-buttons/
    Description: Adds Buttons for very simple and fast feedback to your post. Inspired by Blogger.
-   Version: 0.9.6
+   Version: 0.9.7
    Author: Jakob Lenfers
    Author URI: http://blog.jl42.de
 
@@ -240,7 +240,7 @@ function reaction_buttons_js_header() {
 	?>
 	<script	type='text/javascript'><!--
 	function prepare_attr_jl(str) {
-		return str.replace(" ", "___");
+		return str.replace(/\ /g, "___");
 	}
 	function reaction_buttons_increment_button_ajax(post_id, button){
 		// remove the onclick attribute before sending the request to make
@@ -509,7 +509,7 @@ function reaction_buttons_submenu() {
 						<?php _e("Reaction Buttons:", "reaction_buttons"); ?>
 					</th>
 					<td>
-						<?php _e("Reaction Button Titles, comma seperated.", 'reaction_buttons'); ?><br/>
+						<?php _e("Reaction Button Titles, comma seperated.<br />You may use spaces, but should stay away from exclamation marks and such. If your button doesn't update after you click it, there might be something like an exclamation mark", 'reaction_buttons'); ?><br/>
 						<input size="80" type="text" name="button_names" value="<?php echo attribute_escape(stripslashes(get_option('reaction_buttons_button_names'))); ?>" />
 					</td>
 				</tr>
