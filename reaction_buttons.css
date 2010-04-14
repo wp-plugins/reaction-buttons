@@ -10,6 +10,7 @@ div.reaction_buttons > span {
     margin: 0 3px;
     margin-bottom: 25px;
     border: 1px dotted #000;
+    cursor: pointer;
 }
 
 div.reaction_buttons > span:hover {
