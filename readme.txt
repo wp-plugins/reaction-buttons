@@ -2,7 +2,7 @@
 Tags: feedback, polls, button, comment
 Requires at least: 2.9.1
 Tested up to: 2.9.2
-Stable tag: 0.9.7
+Stable tag: 0.9.8
 
 Adds Buttons for very simple and fast feedback to your post. Inspired by Blogger.
 
@@ -32,6 +32,9 @@ No. :-)
 2. Shows the sidebar widget with some dummy data.
 
 == Changelog ==
+= 0.9.8 =
+* added the possibility to deactivate reaction buttons based on categories.
+
 = 0.9.7 =
 * fixed a small error that prevented the ajax update in buttons with more than one whitespace.
 
