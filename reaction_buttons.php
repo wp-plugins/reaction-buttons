@@ -3,7 +3,7 @@
    Plugin Name: Reaction Buttons
    Plugin URI: http://blog.jl42.de/reaction-buttons/
    Description: Adds Buttons for very simple and fast feedback to your post. Inspired by Blogger.
-   Version: 0.9.7
+   Version: 0.9.8
    Author: Jakob Lenfers
    Author URI: http://blog.jl42.de
 
@@ -49,8 +49,16 @@ function prepare_attr_jl($str) {
  * Returns the reaction buttons.
  */
 function reaction_buttons_html() {
+	// check if reaction buttons are somehow deactivated for this post
 	if (get_post_meta(get_the_ID(),'_reaction_buttons_off',true) or !get_option(reaction_buttons_activate)) {
 		return "";
+	}
+	$excluded_categories = get_option(reaction_buttons_excluded_categories);
+	$post_categories = wp_get_post_categories(get_the_ID());
+	foreach($post_categories as $post_cat){
+		if (array_key_exists($post_cat, $excluded_categories) && $excluded_categories[$post_cat]) {
+			return "";
+		}
 	}
 	
 	$post_id = get_the_ID();
@@ -182,6 +190,9 @@ function reaction_buttons_restore_config($force=false) {
 		                    'is_search' => False,
 		                    'is_author' => False,
 		                    ));
+
+	if ($force or !is_array(get_option('reaction_buttons_excluded_categories')))
+		update_option('reaction_buttons_excluded_categories', array());
 
 	if ( $force or ( get_option('reaction_buttons_usecss', "NOTSET") == "NOTSET" ) ) {
 		update_option('reaction_buttons_usecss', true);
@@ -447,6 +458,17 @@ function reaction_buttons_submenu() {
 			
 		update_option('reaction_buttons_conditionals', $conditionals);
 
+
+		$excluded_categories = Array();
+		if (!$_POST['excluded_categories'])
+			$_POST['excluded_categories'] = Array();
+		
+		foreach($_POST['excluded_categories'] as $condition=>$toggled)
+			$excluded_categories[$condition] = array_key_exists($condition, $_POST['excluded_categories']);
+	
+		update_option('reaction_buttons_excluded_categories', $excluded_categories);
+
+
 		// done saving
 		if ( $error ) {
 			$error = __("Some settings couldn't be saved. More details in the error message below:<br />", 'reaction_buttons') . $error;
@@ -531,6 +553,24 @@ function reaction_buttons_submenu() {
 						<input type="checkbox" name="conditionals[is_date]"<?php checked($conditionals['is_date']); ?> /> <?php _e("Date-based archives", 'reaction_buttons'); ?><br/>
 						<input type="checkbox" name="conditionals[is_author]"<?php checked($conditionals['is_author']); ?> /> <?php _e("Author archives", 'reaction_buttons'); ?><br/>
 						<input type="checkbox" name="conditionals[is_search]"<?php checked($conditionals['is_search']); ?> /> <?php _e("Search results", 'reaction_buttons'); ?><br/>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row" valign="top">
+						<?php _e("Exclude categories:", "reaction_buttons"); ?>
+					</th>
+					<td>
+						<?php _e("Don't show reaction buttons on posts which are in the following categories.", 'reaction_buttons'); ?><br/>
+						<?php
+                                                        $categories = get_categories(array('hide_empty'=>false));
+							// Load categoeries where Reaction Buttons shouldn't be displayed
+							$excluded_categories = get_option('reaction_buttons_excluded_categories');
+							foreach ($categories as $cat){
+						?>
+						<input type="checkbox" name="excluded_categories[<?php echo $cat->cat_ID; ?>]"<?php checked($excluded_categories[$cat->cat_ID]); ?> /> <?php echo $cat->name ?><br />
+						<?php
+							}
+						?>
 					</td>
 				</tr>
 				<tr>
