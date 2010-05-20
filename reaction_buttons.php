@@ -3,7 +3,7 @@
    Plugin Name: Reaction Buttons
    Plugin URI: http://blog.jl42.de/reaction-buttons/
    Description: Adds Buttons for very simple and fast feedback to your post. Inspired by Blogger.
-   Version: 0.9.8
+   Version: 0.9.9
    Author: Jakob Lenfers
    Author URI: http://blog.jl42.de
 
@@ -623,17 +623,48 @@ function reaction_buttons_filter_plugin_actions( $links, $file ){
 add_filter( 'plugin_action_links', 'reaction_buttons_filter_plugin_actions', 10, 2 );
 
 /**
+ * Function to gather the top $limit_posts for each Raction Button. Used for the widget
+ * and the shortcode
+ */
+function reaction_buttons_get_top_posts($limit_posts = 3){
+	global $wpdb;
+	$table = $wpdb->prefix . "postmeta";
+	// check options
+	if($limit_posts < 1) return "";
+	// get the buttons from the options
+	$buttons = explode(",", preg_replace("/,\s+/", ",", get_option('reaction_buttons_button_names')));
+	// output var
+	$html = "";
+
+	// get all buttons and get the top $limit_posts for those buttons
+	foreach($buttons as $button){
+		$posts = $wpdb->get_results("SELECT post_id,meta_value FROM $table WHERE " .
+			"meta_key = '_reaction_buttons_$button' ORDER BY CAST(meta_value AS UNSIGNED) DESC LIMIT $limit_posts");
+		$html .= "<h3>$button</h3>";
+		if($limit_posts > 1) $html .= "<ol>";
+		foreach($posts as $postdb){
+			$post = get_post(intval($postdb->post_id));
+			$count = intval($postdb->meta_value);
+			if($limit_posts > 1) $html .= "<li>";
+			$html .= "<a href='" . get_permalink($post->ID) . "'>" . $post->post_title . "&nbsp;($count)</a>";
+			if($limit_posts > 1) $html .= "</li>";
+		}
+		if($limit_posts > 1) $html .= "</ol>";
+	}
+
+	return $html;
+}
+
+
+/**
  * A widget that displays the posts with the most clicks for each button.
  */
 function reaction_buttons_widget() {
-	global $wpdb;
-	$table = $wpdb->prefix . "postmeta";
-	// get the buttons from the options
-	$buttons = explode(",", preg_replace("/,\s+/", ",", get_option('reaction_buttons_button_names')));
 	// how many posts to show per button?
 	$limit_posts = get_option('reaction_buttons_widget_count');
 	if (!(is_numeric($limit_posts) && 0 < intval($limit_posts))) $limit_posts = 3;
-	if(intval($limit_posts) == 1) $only_one = true;
+	$limit_posts = intval($limit_posts);
+
 	// get title or set default title
 	$title = get_option('reaction_buttons_widget_title');
 	if (empty($title)) $title = __("Most clicked buttons", 'reaction_buttons');
@@ -641,25 +672,7 @@ function reaction_buttons_widget() {
 	// gather the output
 	$widget = "<div class='widget_reaction_buttons widget'>";
 	$widget .= "<h2 class='widgettitle'>" . $title . "</h2>";
-
-	// get all buttons and get the top $limit_posts for those buttons
-	foreach($buttons as $button){
-		$posts = $wpdb->get_results("SELECT post_id,meta_value FROM $table WHERE " .
-			"meta_key = '_reaction_buttons_$button' ORDER BY CAST(meta_value AS UNSIGNED) DESC LIMIT $limit_posts");
-		$widget .= "<h3>$button</h3>";
-		if(!$only_one) $widget .= "<ol>";
-		foreach($posts as $postdb){
-			$post = get_post(intval($postdb->post_id));
-			$count = intval($postdb->meta_value);
-			if(!$only_one) $widget .= "<li>";
-			$widget .= "<a href='" . get_permalink($post->ID) . "'>" . $post->post_title . "&nbsp;($count)</a>";
-			if(!$only_one) $widget .= "</li>";
-		}
-		if(!$only_one) $widget .= "</ol>";
-		
-	}
-
-	
+	$widget .= reaction_buttons_get_top_posts($limit_posts);	
 	$widget .= "</div>";
 	echo $widget;
 }
@@ -702,5 +715,25 @@ function reaction_buttons_init_widget() {
     register_widget_control(__('Reaction Buttons', 'reaction_buttons'), 'reaction_buttons_widget_control');
 }
 add_action("plugins_loaded", "reaction_buttons_init_widget");
+
+/**
+ * Displays the most clicked post of each button (not a widget)
+ */
+function reaction_buttons_most_clicks($atts) {
+	extract(shortcode_atts(array('limit_posts' => 3,), $atts));
+
+
+	$html = "<div class='reaction_buttons_most_clicks'>";		
+	$html .= reaction_buttons_get_top_posts($limit_posts);
+	$html .= "</div>";	
+	return $html;
+}
+
+/**
+ * shortcode [reaction_buttons_most_clicks] shows the most clicked post of each button.
+ * Takes "limit_posts" as parameter to specify the number of posts to show.
+ * (default 3 per button)
+ */
+add_shortcode('reaction_buttons_most_clicks', 'reaction_buttons_most_clicks');
 
 ?>
