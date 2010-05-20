@@ -2,7 +2,7 @@
 Tags: feedback, polls, button, comment
 Requires at least: 2.9.1
 Tested up to: 2.9.2
-Stable tag: 0.9.8
+Stable tag: 0.9.9
 
 Adds Buttons for very simple and fast feedback to your post. Inspired by Blogger.
 
