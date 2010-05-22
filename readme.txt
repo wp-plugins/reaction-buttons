@@ -34,6 +34,9 @@ No. :-)
 2. Shows the sidebar widget with some dummy data.
 
 == Changelog ==
+= 0.9.9.1 =
+* added code for a statistics page in the backend from Fábio Silva
+
 = 0.9.9 =
 * added a shortcode for the widget (show top x posts...)
 
