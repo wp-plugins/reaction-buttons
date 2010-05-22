@@ -2,13 +2,13 @@
 Tags: feedback, polls, button, comment
 Requires at least: 2.9.1
 Tested up to: 2.9.2
-Stable tag: 0.9.7
+Stable tag: 0.9.9
 
 Adds Buttons for very simple and fast feedback to your post. Inspired by Blogger.
 
 == Description ==
 
-This addon adds buttons below your posts (or somewhere else) to make it easy to get reactions to the post, but without the hassle of writing a whole comment. It makes it easier for the reader to interact with you. The buttons are configurable (how many, what text, position) and simply are counters to how often they were clicked.
+This addon adds buttons below your posts (or somewhere else) to make it easy to get reactions to the post, but without the hassle of writing a whole comment. It makes it easier for the reader to interact with you. The buttons are configurable (how many, what text, position) and simply are counters to how often they were clicked. There is also a widget and a shortcode to show the top x posts with the most clicks for each button.
 
 The idea is inspired by a [blogger feature](http://bloggerindraft.blogspot.com/2008/08/new-feature-reactions.html) and since it's been my first addon, I borrowed the structure from [sociable](http://wordpress.org/extend/plugins/sociable/).
 
@@ -19,6 +19,8 @@ Nothing fancy, just like any wordpress addon:
 1. Upload and unzip the plugin to the `/wp-content/plugins/` directory
 1. Activate the plugin through the 'Plugins' menu in WordPress
 1. Optionally configure the plugin in the settings tab
+
+You can also use the widget to show the top x posts with the most clicks for each button in your sidebar. Or alternatively you can use the shortcode [reaction_buttons_most_clicks] to insert the same information somewhere in your post. (Takes limit_posts as argument to set up how many posts per button should be shown: Default: [reaction_buttons_most_clicks limit_posts=3])
 
 == Frequently Asked Questions ==
 
@@ -32,6 +34,15 @@ No. :-)
 2. Shows the sidebar widget with some dummy data.
 
 == Changelog ==
+= 0.9.9.1 =
+* added code for a statistics page in the backend from Fábio Silva
+
+= 0.9.9 =
+* added a shortcode for the widget (show top x posts...)
+
+= 0.9.8 =
+* added the possibility to deactivate reaction buttons based on categories.
+
 = 0.9.7 =
 * fixed a small error that prevented the ajax update in buttons with more than one whitespace.
 

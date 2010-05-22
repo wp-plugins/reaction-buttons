@@ -3,7 +3,7 @@
    Plugin Name: Reaction Buttons
    Plugin URI: http://blog.jl42.de/reaction-buttons/
    Description: Adds Buttons for very simple and fast feedback to your post. Inspired by Blogger.
-   Version: 0.9.7
+   Version: 0.9.9.1
    Author: Jakob Lenfers
    Author URI: http://blog.jl42.de
 
@@ -49,8 +49,16 @@ function prepare_attr_jl($str) {
  * Returns the reaction buttons.
  */
 function reaction_buttons_html() {
+	// check if reaction buttons are somehow deactivated for this post
 	if (get_post_meta(get_the_ID(),'_reaction_buttons_off',true) or !get_option(reaction_buttons_activate)) {
 		return "";
+	}
+	$excluded_categories = get_option(reaction_buttons_excluded_categories);
+	$post_categories = wp_get_post_categories(get_the_ID());
+	foreach($post_categories as $post_cat){
+		if (array_key_exists($post_cat, $excluded_categories) && $excluded_categories[$post_cat]) {
+			return "";
+		}
 	}
 	
 	$post_id = get_the_ID();
@@ -183,6 +191,9 @@ function reaction_buttons_restore_config($force=false) {
 		                    'is_author' => False,
 		                    ));
 
+	if ($force or !is_array(get_option('reaction_buttons_excluded_categories')))
+		update_option('reaction_buttons_excluded_categories', array());
+
 	if ( $force or ( get_option('reaction_buttons_usecss', "NOTSET") == "NOTSET" ) ) {
 		update_option('reaction_buttons_usecss', true);
 	}
@@ -190,6 +201,49 @@ function reaction_buttons_restore_config($force=false) {
 	if ( $force or !( get_option('reaction_buttons_usecookies')) ) {
 		update_option('reaction_buttons_usecookies', false);
 	}
+}
+
+/**
+ * Statistics Page
+ */
+function reaction_buttons_statistic_page(){
+?>
+	<div class="wrap">
+		<?php screen_icon(); ?>
+		<h2><?php _e("Reaction Buttons Statistics", 'reaction_buttons'); ?></h2>
+        <table class="form-table" border="1" style="border: 1px solid #818181;">
+			<?php
+            $pagination = reaction_buttons_paginate_statistics($page = 1, $per_page = 10);
+            echo reaction_buttons_get_top_posts($pagination['perPage'], $pagination['page'], $output_as_table = true);
+            ?>                
+        </table>
+        <div style="width: 100%; margin-top: 20px;">
+        	Pages:
+            <form action="<?php echo attribute_escape( $_SERVER['REQUEST_URI'] ); ?>" method="post">                        
+				<input name="statistics" value="<?php _e("Statistics page", 'reaction_buttons'); ?>" type="hidden" />                
+			<?php
+                for( $i=1; $i < ceil($pagination['totalPages']) + 1; $i++ ){
+    
+                    if($pagination['page'] == $i) {
+                    ?>
+                        <span style="background: #898989; color:#FFFFFF; padding:2px 5px;"><?=$i?></span>
+                        
+                    <?php
+                    }               
+    
+                    else {
+                    
+                    ?>                       
+                        <input name="num" value="<?=$i?>" type="submit" />
+                        
+                    <?php        
+                    }
+                }			
+            ?>
+            </form>
+        </div>
+	</div>
+<?php
 }
 
 /**
@@ -393,6 +447,10 @@ function reaction_buttons_submenu() {
 	else if (isset($_REQUEST['remove']) && $_REQUEST['remove']) {
 		reaction_buttons_clean_old_button_names();
 	}
+	// redirect to statistic page
+	else if (isset($_REQUEST['statistics']) && $_REQUEST['statistics']) {
+		reaction_buttons_statistic_page();
+	}
 	// saves the settings from the page
 	else if (isset($_REQUEST['save']) && $_REQUEST['save']) {
 		check_admin_referer('reaction_buttons_config');
@@ -447,6 +505,17 @@ function reaction_buttons_submenu() {
 			
 		update_option('reaction_buttons_conditionals', $conditionals);
 
+
+		$excluded_categories = Array();
+		if (!$_POST['excluded_categories'])
+			$_POST['excluded_categories'] = Array();
+		
+		foreach($_POST['excluded_categories'] as $condition=>$toggled)
+			$excluded_categories[$condition] = array_key_exists($condition, $_POST['excluded_categories']);
+	
+		update_option('reaction_buttons_excluded_categories', $excluded_categories);
+
+
 		// done saving
 		if ( $error ) {
 			$error = __("Some settings couldn't be saved. More details in the error message below:<br />", 'reaction_buttons') . $error;
@@ -456,7 +525,7 @@ function reaction_buttons_submenu() {
 			reaction_buttons_message(__("Saved changes.", 'reaction_buttons'));
 		}
 	}
-	
+	else {	
 	/**
 	 * Display options.
 	 */
@@ -535,6 +604,24 @@ function reaction_buttons_submenu() {
 				</tr>
 				<tr>
 					<th scope="row" valign="top">
+						<?php _e("Exclude categories:", "reaction_buttons"); ?>
+					</th>
+					<td>
+						<?php _e("Don't show reaction buttons on posts which are in the following categories.", 'reaction_buttons'); ?><br/>
+						<?php
+                                                        $categories = get_categories(array('hide_empty'=>false));
+							// Load categoeries where Reaction Buttons shouldn't be displayed
+							$excluded_categories = get_option('reaction_buttons_excluded_categories');
+							foreach ($categories as $cat){
+						?>
+						<input type="checkbox" name="excluded_categories[<?php echo $cat->cat_ID; ?>]"<?php checked($excluded_categories[$cat->cat_ID]); ?> /> <?php echo $cat->name ?><br />
+						<?php
+							}
+						?>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row" valign="top">
 						<?php _e("Use CSS:", "reaction_buttons"); ?>
 					</th>
 					<td>
@@ -556,12 +643,14 @@ function reaction_buttons_submenu() {
 						<span class="submit"><input name="save" value="<?php _e("Save Changes", 'reaction_buttons'); ?>" type="submit" /></span>
 						<span class="submit"><input name="restore" value="<?php _e("Restore Built-in Defaults", 'reaction_buttons'); ?>" type="submit"/></span>
 						<span class="submit"><input name="remove" value="<?php _e("Remove unused data", 'reaction_buttons'); ?>" type="submit"/></span>
+                        <span class="submit"><input name="statistics" value="<?php _e("Statistics page", 'reaction_buttons'); ?>" type="submit"/></span>
 					</td>
 				</tr>
 			</table>
 		</div>
 	</form>
 <?php
+	}
 }
 
 
@@ -583,17 +672,98 @@ function reaction_buttons_filter_plugin_actions( $links, $file ){
 add_filter( 'plugin_action_links', 'reaction_buttons_filter_plugin_actions', 10, 2 );
 
 /**
+ * Function to gather the top $limit_posts for each Raction Button. Used for the widget
+ * and the shortcode
+ */
+function reaction_buttons_get_top_posts($limit_posts = 3, $page = 1, $output_as_table = false){
+	global $wpdb;
+	$table = $wpdb->prefix . "postmeta";
+	// check options
+	if($limit_posts < 1) return "";
+	// get the buttons from the options
+	$buttons = explode(",", preg_replace("/,\s+/", ",", get_option('reaction_buttons_button_names')));
+	// output var
+	$html = "";	
+	$html_table_th = "";
+	$html_table = "";
+	
+	// for pagination
+	$offset = ($page - 1) * $limit_posts;
+					
+	// get all buttons and get the top $limit_posts for those buttons
+	foreach($buttons as $button){
+		$posts = $wpdb->get_results("SELECT post_id,meta_value FROM $table WHERE " .
+			"meta_key = '_reaction_buttons_$button' ORDER BY CAST(meta_value AS UNSIGNED) DESC LIMIT $limit_posts OFFSET $offset");
+					
+		$output_as_table == false ? $html .= "<h3>$button</h3>" : $html_table_th .= '<th style="text-align: center">'.$button.'</th>';
+		
+		if($limit_posts > 1) $output_as_table == false ? $html .= "<ol>" : $html .= "<td style='vertical-align: top;'>";
+		
+		foreach($posts as $postdb){
+			$post = get_post(intval($postdb->post_id));
+			$count = intval($postdb->meta_value);
+			
+			if($limit_posts > 1) $output_as_table == false ? $html .= "<li>" : $html .= "";
+			
+			$html .= "<p><a href='" . get_permalink($post->ID) . "'>" . $post->post_title . '&nbsp;<span style="color: #000; font-weight: bold">('.$count.')</span></a></p>';
+			
+			if($limit_posts > 1) $output_as_table == false ? $html .= "</li>" : $html .= "";
+		}
+		
+		if($limit_posts > 1) $output_as_table == false ? $html .= "</ol>" : $html .= "</td>";
+	}		
+	
+	$html_table = "<tr>" . $html_table_th . "</tr><tr>" . $html . "</tr>";
+	return $output_as_table == false ? $html : $html_table;
+}
+
+/**
+*  Pagination for statistics page
+*/
+function reaction_buttons_paginate_statistics($page = 1, $per_page = 10){
+
+	global $wpdb;
+	$table = $wpdb->prefix . "postmeta";
+	$buttons = explode(",", preg_replace("/,\s+/", ",", get_option('reaction_buttons_button_names')));
+
+	$maxRecords = 0;
+	foreach($buttons as $button) {
+		$result = $wpdb->get_results("SELECT COUNT(post_id) as count FROM $table WHERE meta_key = '_reaction_buttons_$button'");
+		if(intval($result[0]->count) > $maxRecords) $maxRecords = intval($result[0]->count);
+	}
+	
+	/*
+	$currentPage = (int)$page;
+	$perPage = (int)$per_page;
+	$totalPages = ceil($maxRecords / $perPage);	
+	$previousPage = $currentPage - 1;	
+	$nextPage = $currentPage + 1;	
+	$previousPageExists = $previousPage >= 1 ? true : false; 	
+	$nextPageExists = $nextPage <= $totalPages ? true : false; 	
+	$num = $_POST['num'];	
+	$page = !empty($num) ? (int)$num : 1;
+	$pagination = array("perPage" => $perPage, "totalPages" => $totalPages, "page" => $page);
+	return $pagination;
+	*/
+		
+	$per_page = (int)$per_page;
+	$totalPages = ceil($maxRecords / $per_page);	
+	$num = $_POST['num'];	
+	$page = !empty($num) ? (int)$num : 1;
+	$pagination = array("perPage" => $per_page, "totalPages" => $totalPages, "page" => $page);
+
+	return $pagination;
+}
+
+/**
  * A widget that displays the posts with the most clicks for each button.
  */
 function reaction_buttons_widget() {
-	global $wpdb;
-	$table = $wpdb->prefix . "postmeta";
-	// get the buttons from the options
-	$buttons = explode(",", preg_replace("/,\s+/", ",", get_option('reaction_buttons_button_names')));
 	// how many posts to show per button?
 	$limit_posts = get_option('reaction_buttons_widget_count');
 	if (!(is_numeric($limit_posts) && 0 < intval($limit_posts))) $limit_posts = 3;
-	if(intval($limit_posts) == 1) $only_one = true;
+	$limit_posts = intval($limit_posts);
+
 	// get title or set default title
 	$title = get_option('reaction_buttons_widget_title');
 	if (empty($title)) $title = __("Most clicked buttons", 'reaction_buttons');
@@ -601,25 +771,7 @@ function reaction_buttons_widget() {
 	// gather the output
 	$widget = "<div class='widget_reaction_buttons widget'>";
 	$widget .= "<h2 class='widgettitle'>" . $title . "</h2>";
-
-	// get all buttons and get the top $limit_posts for those buttons
-	foreach($buttons as $button){
-		$posts = $wpdb->get_results("SELECT post_id,meta_value FROM $table WHERE " .
-			"meta_key = '_reaction_buttons_$button' ORDER BY CAST(meta_value AS UNSIGNED) DESC LIMIT $limit_posts");
-		$widget .= "<h3>$button</h3>";
-		if(!$only_one) $widget .= "<ol>";
-		foreach($posts as $postdb){
-			$post = get_post(intval($postdb->post_id));
-			$count = intval($postdb->meta_value);
-			if(!$only_one) $widget .= "<li>";
-			$widget .= "<a href='" . get_permalink($post->ID) . "'>" . $post->post_title . "&nbsp;($count)</a>";
-			if(!$only_one) $widget .= "</li>";
-		}
-		if(!$only_one) $widget .= "</ol>";
-		
-	}
-
-	
+	$widget .= reaction_buttons_get_top_posts($limit_posts, $page = 1, $output_as_table = false);	
 	$widget .= "</div>";
 	echo $widget;
 }
@@ -662,5 +814,25 @@ function reaction_buttons_init_widget() {
     register_widget_control(__('Reaction Buttons', 'reaction_buttons'), 'reaction_buttons_widget_control');
 }
 add_action("plugins_loaded", "reaction_buttons_init_widget");
+
+/**
+ * Displays the most clicked post of each button (not a widget)
+ */
+function reaction_buttons_most_clicks($atts) {
+	extract(shortcode_atts(array('limit_posts' => 3,), $atts));
+
+
+	$html = "<div class='reaction_buttons_most_clicks'>";		
+	$html .= reaction_buttons_get_top_posts($limit_posts, $page = 1, $output_as_table = false);
+	$html .= "</div>";	
+	return $html;
+}
+
+/**
+ * shortcode [reaction_buttons_most_clicks] shows the most clicked post of each button.
+ * Takes "limit_posts" as parameter to specify the number of posts to show.
+ * (default 3 per button)
+ */
+add_shortcode('reaction_buttons_most_clicks', 'reaction_buttons_most_clicks');
 
 ?>
