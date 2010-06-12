@@ -1,8 +1,8 @@
 === Reaction Buttons ===
 Tags: feedback, polls, button, comment
 Requires at least: 2.9.1
-Tested up to: 2.9.2
-Stable tag: 0.9.9.2
+Tested up to: 3.0
+Stable tag: 1.0
 
 Adds Buttons for very simple and fast feedback to your post. Inspired by Blogger.
 
@@ -34,6 +34,10 @@ No. :-)
 2. Shows the sidebar widget with some dummy data.
 
 == Changelog ==
+= 1.0 =
+* small changes for 3.0
+* tested with 3.0rc3
+
 = 0.9.9.2 =
 * added code for a second widget and statistics page: Show the top x posts with the most overall clicks.
 

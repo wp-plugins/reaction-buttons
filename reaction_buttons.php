@@ -3,7 +3,7 @@
    Plugin Name: Reaction Buttons
    Plugin URI: http://blog.jl42.de/reaction-buttons/
    Description: Adds Buttons for very simple and fast feedback to your post. Inspired by Blogger.
-   Version: 0.9.9.2
+   Version: 1.0
    Author: Jakob Lenfers
    Author URI: http://blog.jl42.de
 
@@ -752,11 +752,21 @@ function reaction_buttons_get_top_button_posts($limit_posts = 3, $page = 1, $out
 			$post = get_post(intval($postdb->post_id));
 			$count = intval($postdb->meta_value);
 			
-			if($limit_posts > 1) $output_as_table == false ? $html .= "<li>" : $html .= "";
+			if($limit_posts > 1){
+				$output_as_table == false ? $html .= "<li>" : $html .= "";
+			}
+			else{
+				$output_as_table == false ? $html .= "<p>" : $html .= "";
+			}
 			
-			$html .= "<p><a href='" . get_permalink($post->ID) . "'>" . $post->post_title . '&nbsp;<span style="color: #000; font-weight: bold">('.$count.')</span></a></p>';
+			$html .= "<a href='" . get_permalink($post->ID) . "'>" . $post->post_title . '&nbsp;<span style="color: #000; font-weight: bold">('.$count.')</span></a>';
 			
-			if($limit_posts > 1) $output_as_table == false ? $html .= "</li>" : $html .= "";
+			if($limit_posts > 1){
+				$output_as_table == false ? $html .= "</li>" : $html .= "";
+			}
+			else{
+				$output_as_table == false ? $html .= "</p>" : $html .= "";
+			}
 		}
 		
 		if($limit_posts > 1) $output_as_table == false ? $html .= "</ol>" : $html .= "</td>";
@@ -789,9 +799,19 @@ function reaction_buttons_get_top_clicked_posts($limit_posts = 5, $page = 1){
 		$post = get_post(intval($postdb->post_id));
 		$count = intval($postdb->count);
 		
-		if($limit_posts > 1) $html .= "<li>";		
-		$html .= "<p><a href='" . get_permalink($post->ID) . "'>" . $post->post_title . '&nbsp;<span style="color: #000; font-weight: bold">('.$count.')</span></a></p>';
-		if($limit_posts > 1) $html .= "</li>";
+		if($limit_posts > 1){
+			$html .= "<li>";
+		}
+		else{
+			$html .= "<p>";
+		}
+		$html .= "<a href='" . get_permalink($post->ID) . "'>" . $post->post_title . '&nbsp;<span style="color: #000; font-weight: bold">('.$count.')</span></a>';
+		if($limit_posts > 1){
+			$html .= "</li>";
+		}
+		else{
+			$html .= "</p>";
+		}
 	}
 		
 	if($limit_posts > 1) $html .= "</ol>";
