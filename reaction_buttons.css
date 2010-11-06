@@ -1,10 +1,12 @@
+/* the reaction buttons region */
 div.reaction_buttons{
     margin-top: 20px;
     font-size: 0.8em;
     text-align: left;
 }
 
-div.reaction_buttons > span {
+/* a single button */
+div.reaction_buttons .reaction_button {
     line-height: 3.2em;
     padding: 5px;
     margin: 0 3px;
@@ -13,10 +15,27 @@ div.reaction_buttons > span {
     cursor: pointer;
 }
 
-div.reaction_buttons > span:hover {
+/* the button while hovering over it */
+div.reaction_buttons > .reaction_button:hover {
     background-color: #0F6;
 }
 
+/* the button after voting 
+div.reaction_buttons > .voted, div.reaction_buttons > .voted:hover {
+}
+ /*
+
+/* number of votes including parantheses.
+.reaction_buttons .reaction_button .count {
+}
+ */
+
+/* number of votes in between the parantheses.
+.reaction_buttons .reaction_button .count_number {
+}
+ */
+ 
+ 
 #sidebar div.widget_reaction_buttons h3 {
 	margin: 0;
 	margin-top: 4px;
