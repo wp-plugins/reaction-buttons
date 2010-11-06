@@ -1,8 +1,8 @@
 === Reaction Buttons ===
 Tags: feedback, polls, button, comment
 Requires at least: 2.9.1
-Tested up to: 3.0
-Stable tag: 1.0
+Tested up to: 3.0.1
+Stable tag: 1.1
 
 Adds Buttons for very simple and fast feedback to your post. Inspired by Blogger.
 
@@ -35,7 +35,10 @@ No. :-)
 
 == Changelog ==
 = 1.1 =
-* added reaction_buttons_click_count($post_id) to include number of reactions per post.
+* added reaction_buttons_click_count($post_id) to include number of reactions per post in own themes. Returns the accumulated number of clicks of the specified post.
+* added the possibility to only allow only one vote per post. (Thanks Vlad for most of the code!)
+* added the option to show a javascript popup if you try to vote twice.  (Thanks Vlad for the idea and most of the code!)
+* added the option to show the results only after the user voted.
 
 = 1.0 =
 * small changes for 3.0
