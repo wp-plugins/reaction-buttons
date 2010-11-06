@@ -34,6 +34,9 @@ No. :-)
 2. Shows the sidebar widget with some dummy data.
 
 == Changelog ==
+= 1.1 =
+* added reaction_buttons_click_count($post_id) to include number of reactions per post.
+
 = 1.0 =
 * small changes for 3.0
 * tested with 3.0rc3

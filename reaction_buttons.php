@@ -3,7 +3,7 @@
    Plugin Name: Reaction Buttons
    Plugin URI: http://blog.jl42.de/reaction-buttons/
    Description: Adds Buttons for very simple and fast feedback to your post. Inspired by Blogger.
-   Version: 1.0
+   Version: 1.1
    Author: Jakob Lenfers
    Author URI: http://blog.jl42.de
 
@@ -759,7 +759,7 @@ function reaction_buttons_get_top_button_posts($limit_posts = 3, $page = 1, $out
 				$output_as_table == false ? $html .= "<p>" : $html .= "";
 			}
 			
-			$html .= "<a href='" . get_permalink($post->ID) . "'>" . $post->post_title . '&nbsp;<span style="color: #000; font-weight: bold">('.$count.')</span></a>';
+			$html .= "<a href='" . get_permalink($post->ID) . "'>" . $post->post_title . '&nbsp;<span style="color: #000; font-weight: bold">('.$count.')</span></a><br />';
 			
 			if($limit_posts > 1){
 				$output_as_table == false ? $html .= "</li>" : $html .= "";
@@ -994,5 +994,16 @@ function reaction_buttons_most_clicks($atts) {
  * (default 3 per button)
  */
 add_shortcode('reaction_buttons_most_clicks', 'reaction_buttons_most_clicks');
+
+function reaction_buttons_click_count($post_id){
+	global $wpdb;
+	$table = $wpdb->prefix . "postmeta";
+
+	if(!is_int($post_id)) return;
+
+	$result = $wpdb->get_results("select sum(meta_value) as count from $table where post_id=$post_id and meta_key like '_reaction_buttons%'");
+	return $result[0]->count;
+
+}
 
 ?>
