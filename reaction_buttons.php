@@ -3,7 +3,7 @@
    Plugin Name: Reaction Buttons
    Plugin URI: http://blog.jl42.de/reaction-buttons/
    Description: Adds Buttons for very simple and fast feedback to your post. Inspired by Blogger.
-   Version: 1.1
+   Version: 1.1.1
    Author: Jakob Lenfers
    Author URI: http://blog.jl42.de
 
@@ -86,7 +86,7 @@ function reaction_buttons_html() {
 	$tagline = get_option("reaction_buttons_tagline");
 	if ($tagline != "") {
 		$html .= '<div class="reaction_buttons_tagline">';
-		$html .= htmlspecialchars($tagline);
+		$html .= $tagline;
 		$html .= "</div>";
 	}
 
@@ -699,7 +699,7 @@ function reaction_buttons_submenu() {
 						<?php _e("Tagline:", "reaction_buttons"); ?>
 					</th>
 					<td>
-						<?php _e("Text above the reaction buttons.", 'reaction_buttons'); ?><br/>
+						<?php _e("Text above the reaction buttons. HTML is allowed in this field.", 'reaction_buttons'); ?><br/>
 						<input size="80" type="text" name="tagline" value="<?php echo attribute_escape(stripslashes(get_option('reaction_buttons_tagline'))); ?>" />
 					</td>
 				</tr>
@@ -708,7 +708,7 @@ function reaction_buttons_submenu() {
 						<?php _e("Reaction Buttons:", "reaction_buttons"); ?>
 					</th>
 					<td>
-						<?php _e("Reaction Button Titles, comma seperated.<br />You may use spaces, but should stay away from exclamation marks and such. If your button doesn't update after you click it, there might be something like an exclamation mark", 'reaction_buttons'); ?><br/>
+						<?php _e("Reaction button titles, comma seperated.<br />You may use spaces, but should stay away from exclamation marks and such. If your button doesn't update after you click it, there might be something like an exclamation mark in its name.", 'reaction_buttons'); ?><br/>
 						<input size="80" type="text" name="button_names" value="<?php echo attribute_escape(stripslashes(get_option('reaction_buttons_button_names'))); ?>" />
 					</td>
 				</tr>
