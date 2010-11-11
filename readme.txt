@@ -1,14 +1,14 @@
 === Reaction Buttons ===
 Tags: feedback, polls, button, comment
 Requires at least: 2.9.1
-Tested up to: 2.9.2
-Stable tag: 0.9.7
+Tested up to: 3.0.1
+Stable tag: 1.1.1.1
 
 Adds Buttons for very simple and fast feedback to your post. Inspired by Blogger.
 
 == Description ==
 
-This addon adds buttons below your posts (or somewhere else) to make it easy to get reactions to the post, but without the hassle of writing a whole comment. It makes it easier for the reader to interact with you. The buttons are configurable (how many, what text, position) and simply are counters to how often they were clicked.
+This addon adds buttons below your posts (or somewhere else) to make it easy to get reactions to the post, but without the hassle of writing a whole comment. It makes it easier for the reader to interact with you. The buttons are configurable (how many, what text, position) and simply are counters to how often they were clicked. There is also a widget and a shortcode to show the top x posts with the most clicks for each button.
 
 The idea is inspired by a [blogger feature](http://bloggerindraft.blogspot.com/2008/08/new-feature-reactions.html) and since it's been my first addon, I borrowed the structure from [sociable](http://wordpress.org/extend/plugins/sociable/).
 
@@ -20,11 +20,13 @@ Nothing fancy, just like any wordpress addon:
 1. Activate the plugin through the 'Plugins' menu in WordPress
 1. Optionally configure the plugin in the settings tab
 
+You can also use the widget to show the top x posts with the most clicks for each button in your sidebar. Or alternatively you can use the shortcode [reaction_buttons_most_clicks] to insert the same information somewhere in your post. (Takes limit_posts as argument to set up how many posts per button should be shown: Default: [reaction_buttons_most_clicks limit_posts=3])
+
 == Frequently Asked Questions ==
 
-= Did I get any questions so far? =
-
-No. :-)
+= My reaction buttons don't update =
+* Do you use any special characters like exclamation marks in your button names?
+* Is your PHP installation new enough? Reaction buttons require at least PHP 5.2.
 
 == Screenshots ==
 
@@ -32,6 +34,35 @@ No. :-)
 2. Shows the sidebar widget with some dummy data.
 
 == Changelog ==
+= 1.1.1.1 =
+* Well, it's 11.11, so this is the Kölle Alaaf release! :)
+* No just kidding, just found a small error in the previous release with the HTML-tagline, fixed now.
+
+= 1.1.1 =
+* small update, added the possibility to use HTML in the buttons taqline
+
+= 1.1 =
+* added reaction_buttons_click_count($post_id) to include number of reactions per post in own themes. Returns the accumulated number of clicks of the specified post.
+* added the possibility to only allow only one vote per post. (Thanks Vlad for most of the code!)
+* added the option to show a javascript popup if you try to vote twice.  (Thanks Vlad for the idea and most of the code!)
+* added the option to show the results only after the user voted.
+
+= 1.0 =
+* small changes for 3.0
+* tested with 3.0rc3
+
+= 0.9.9.2 =
+* added code for a second widget and statistics page: Show the top x posts with the most overall clicks.
+
+= 0.9.9.1 =
+* added code for a statistics page in the backend from Fábio Silva
+
+= 0.9.9 =
+* added a shortcode for the widget (show top x posts...)
+
+= 0.9.8 =
+* added the possibility to deactivate reaction buttons based on categories.
+
 = 0.9.7 =
 * fixed a small error that prevented the ajax update in buttons with more than one whitespace.
 
