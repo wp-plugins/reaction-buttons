@@ -2,7 +2,7 @@
 Tags: feedback, polls, button, comment
 Requires at least: 2.9.1
 Tested up to: 3.0.1
-Stable tag: 1.1.1
+Stable tag: 1.1.1.1
 
 Adds Buttons for very simple and fast feedback to your post. Inspired by Blogger.
 
@@ -34,8 +34,13 @@ You can also use the widget to show the top x posts with the most clicks for eac
 2. Shows the sidebar widget with some dummy data.
 
 == Changelog ==
+= 1.1.1.1 =
+* Well, it's 11.11, so this is the Kölle Alaaf release! :)
+* No just kidding, just found a small error in the previous release with the HTML-tagline, fixed now.
+
 = 1.1.1 =
 * small update, added the possibility to use HTML in the buttons taqline
+
 = 1.1 =
 * added reaction_buttons_click_count($post_id) to include number of reactions per post in own themes. Returns the accumulated number of clicks of the specified post.
 * added the possibility to only allow only one vote per post. (Thanks Vlad for most of the code!)
