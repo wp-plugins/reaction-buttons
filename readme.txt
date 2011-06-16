@@ -1,7 +1,7 @@
 === Reaction Buttons ===
 Tags: feedback, polls, button, comment
 Requires at least: 2.9.1
-Tested up to: 3.0.1
+Tested up to: 3.1.3
 Stable tag: 1.1.1.1
 
 Adds Buttons for very simple and fast feedback to your post. Inspired by Blogger.
