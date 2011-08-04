@@ -1,8 +1,8 @@
 === Reaction Buttons ===
 Tags: feedback, polls, button, comment
 Requires at least: 2.9.1
-Tested up to: 3.1.3
-Stable tag: 1.1.1.1
+Tested up to: 3.2.1
+Stable tag: 1.1.2
 
 Adds Buttons for very simple and fast feedback to your post. Inspired by Blogger.
 
@@ -34,6 +34,9 @@ You can also use the widget to show the top x posts with the most clicks for eac
 2. Shows the sidebar widget with some dummy data.
 
 == Changelog ==
+= 1.1.2 =
+* very small java script change
+
 = 1.1.1.1 =
 * Well, it's 11.11, so this is the Kölle Alaaf release! :)
 * No just kidding, just found a small error in the previous release with the HTML-tagline, fixed now.
