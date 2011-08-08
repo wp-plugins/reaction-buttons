@@ -2,7 +2,7 @@
 Tags: feedback, polls, button, comment
 Requires at least: 2.9.1
 Tested up to: 3.2.1
-Stable tag: 1.1.2
+Stable tag: 1.2
 
 Adds Buttons for very simple and fast feedback to your post. Inspired by Blogger.
 
@@ -27,6 +27,16 @@ You can also use the widget to show the top x posts with the most clicks for eac
 = My reaction buttons don't update =
 * Do you use any special characters like exclamation marks in your button names?
 * Is your PHP installation new enough? Reaction buttons require at least PHP 5.2.
+* Do you use a cache plugin? When the page is cached as soon as you reload the page your vote isn't shown anymore until the cache is cleared. See below.
+
+= How can the plugin work with plugins that cache the posts to increase page performance? =
+* I added an option to refresh the cache of a page after a button was clicked. But the cache plugin has to be supported by reaction buttons.
+
+= What cache plugins are supported for automatic cache refresh? =
+* W3 Total Cache
+
+= My plugin isn't listed, can you add support? =
+* Sure, use the [wordpress support forums](http://wordpress.org/tags/reaction-buttons?forum_id=10) with a link to the plugin and I'll check it out next time I've got time for the plugin. If you want it fast, check the documentation of the cache plugin and find me the function to delete single page caches. Then it shouldn't be a problem to implement shortly.
 
 == Screenshots ==
 
@@ -34,6 +44,11 @@ You can also use the widget to show the top x posts with the most clicks for eac
 2. Shows the sidebar widget with some dummy data.
 
 == Changelog ==
+= 1.2 =
+* changed cookie handling
+* added support for deleting the page cache after clicking a button
+* supported cache plugin: W3 Total Cache
+
 = 1.1.2 =
 * very small java script change
 
@@ -103,4 +118,5 @@ You can also use the widget to show the top x posts with the most clicks for eac
 
 == Restrictions ==
 * There cannot be spaces in html classes, so the plugin wouldn't work if there would be buttons named "great article" *and* "great___article", because it converts the spaces into three underscores.
-* Also the addon (at least the ajax part) doesn't work with certain special chars like exclamation marks. If thats a problem for someone I can see if there is a way to fix it, for now I'm all right with it. :)
+* Also the addon (at least the ajax part) doesn't work with certain special chars like exclamation marks.
+* When using plugins to cache the pages, the buttons won't be up to date. They will increment through the javascript, but when the page reloads the old count will show again, until the cache is deleted. Check the FAQ on possibilities how to change that.

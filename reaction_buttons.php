@@ -3,7 +3,7 @@
    Plugin Name: Reaction Buttons
    Plugin URI: http://blog.jl42.de/reaction-buttons/
    Description: Adds Buttons for very simple and fast feedback to your post. Inspired by Blogger.
-   Version: 1.1.2
+   Version: 1.2
    Author: Jakob Lenfers
    Author URI: http://blog.jl42.de
 
@@ -228,6 +228,10 @@ function reaction_buttons_restore_config($force=false) {
 		update_option('reaction_buttons_already_voted_text', "");
 	}
 
+	if ( $force or !( get_option('reaction_buttons_clear_supported_caches')) ) {
+		update_option('reaction_buttons_clear_supported_caches', true);
+	}
+
 	if ($force or !is_array(get_option('reaction_buttons_conditionals')))
 		update_option('reaction_buttons_conditionals',
 		              array('is_home' => True,
@@ -422,11 +426,6 @@ function reaction_buttons_js_header() {
 				type: "post",url: "<?php bloginfo( 'wpurl' ); ?>/wp-admin/admin-ajax.php", dataType: 'json',
 					data: { action: 'reaction_buttons_increment_button_php', post_id: post_id, button: button, _ajax_nonce: '<?php echo $nonce; ?>' },
 					success: function(data){
-						if(data['cookie']){
-							// Set the cookie, which expires after 3 days. Hope that helps to circumvent
-							// the problem that browsers only have to save 30 cookies per domain.
-							jQuery.cookie("reaction_buttons_" + post_id, JSON.stringify(data['cookie']), {expires: 3});
-						}
 						jQuery("#reaction_buttons_post" + post_id + " .reaction_button_" + prepare_attr_jl(button) + "_count .count").html("("+data['count']+")");
 						if(only_one_vote){
 							jQuery("#reaction_buttons_post" + post_id + " .reaction_button").addClass('voted');
@@ -448,8 +447,8 @@ function reaction_buttons_js_header() {
 // add the javascript stuff
 wp_enqueue_script("jquery");
 wp_enqueue_script("json2");
-wp_register_script('jquery_kekse', plugins_url('reaction-buttons/jquery.kekse.js'));
-wp_enqueue_script('jquery_kekse');
+//wp_register_script('jquery_kekse', plugins_url('reaction-buttons/jquery.kekse.js'));
+//wp_enqueue_script('jquery_kekse');
 add_action('wp_head', 'reaction_buttons_js_header' );
 add_action('wp_ajax_reaction_buttons_increment_button_php', 'reaction_buttons_increment_button_php', 1, 2);
 add_action('wp_ajax_nopriv_reaction_buttons_increment_button_php', 'reaction_buttons_increment_button_php', 1, 2);
@@ -475,10 +474,17 @@ function reaction_buttons_increment_button_php(){
 	$current = intval(get_post_meta($post_id, "_reaction_buttons_" . stripslashes($button), true));
 	update_post_meta($post_id, "_reaction_buttons_" . stripslashes($button), ++$current);
 
+	// support for clearing the articles cache if w3total cache is installed
+	if(get_option(reaction_buttons_clear_supported_caches)){
+		if (function_exists('w3tc_pgcache_flush_post')) {
+			w3tc_pgcache_flush_post($post_id);
+		}
+	}
+
 	if(get_option(reaction_buttons_usecookies)){
-		if ( $_COOKIE["reaction_buttons"] ) {
+		if ( $_COOKIE["reaction_buttons_" . $post_id] ) {
 			$json = stripslashes($_COOKIE["reaction_buttons_" . $post_id]);
-			$cookie = json_decode($json, true);
+			$cookie = json_decode($json, true); 
 			if(!is_array($cookie)) $cookie = array();
 		}
 		else {
@@ -486,7 +492,9 @@ function reaction_buttons_increment_button_php(){
 		}
 
 		$cookie[$button] = true;
-		$result['cookie'] = $cookie;
+                $cookie_path_pos = strpos(site_url("", "http"), "/", 8);
+                $cookie_path = $cookie_path_pos ? substr(site_url("", "http"), $cookie_path_pos) : "/";
+                setcookie("reaction_buttons_" . $post_id, json_encode($cookie), time()+3600*24*3, $cookie_path);
 	}
 
 	$result['count'] = $current;
@@ -588,7 +596,7 @@ function reaction_buttons_submenu() {
 		$error = "";
 
 		// save the different settings (boolean, text, array of bool)
-		foreach ( array('activate', 'usecss', 'usecookies', 'only_one_vote', 'show_after_votes') as $val ) {
+		foreach ( array('activate', 'usecss', 'usecookies', 'only_one_vote', 'show_after_votes', 'clear_supported_caches') as $val ) {
 			if ( isset($_POST[$val]) && $_POST[$val] )
 				update_option('reaction_buttons_'.$val,true);
 			else
@@ -744,6 +752,16 @@ function reaction_buttons_submenu() {
 					<td>
 						<?php _e("A text to popup if a users tries to vote twice. Leave empty to disable this function.", 'reaction_buttons'); ?><br/>
 						<input size="80" type="text" name="already_voted_text" value="<?php echo attribute_escape(stripslashes(get_option('reaction_buttons_already_voted_text'))); ?>" />
+					</td>
+				</tr>
+				<tr>
+					<th scope="row" valign="top">
+						<?php _e("Clear cache:", "reaction_buttons"); ?>
+					</th>
+					<td>
+						<input type="checkbox" name="clear_supported_caches" <?php checked( get_option('reaction_buttons_clear_supported_caches'), true ); ?> /> <?php _e("Try to clear cache from supported caching plugins to make the vote show up at once?", "reaction_buttons"); ?><br/>
+						<?php _e("Currently supported systems are: W3 Total Cache", "reaction_buttons"); ?><br/>
+						<?php _e("If you need another plugin added here, please consult the <a href='http://wordpress.org/extend/plugins/reaction-buttons/faq/'>Reaction Buttons FAQ</a>.", "reaction_buttons"); ?>
 					</td>
 				</tr>
 				<tr>
