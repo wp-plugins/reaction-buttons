@@ -4,7 +4,7 @@ Requires at least: 2.9.1
 Tested up to: 3.2.1
 Stable tag: 1.2
 
-Adds Buttons for very simple and fast feedback to your post. Inspired by Blogger.
+Adds buttons for very simple and fast feedback to your post. Inspired by Blogger.
 
 == Description ==
 
