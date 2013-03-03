@@ -9,7 +9,7 @@
 
    I used the sociable plugin as template.
 
-   Copyright 2010-present Jakob Lenfers <jakob@drss.de>
+   Copyright 2010-present Jakob Lenfers <jakob@lenfers.org>
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -83,6 +83,12 @@ function reaction_buttons_html() {
 
 	// Start preparing the output
 	$html = "\n<div id='reaction_buttons_post" . $post_id . "' class='reaction_buttons'>\n";
+
+	// If a reaction summary is set, display it above the rest
+	$reaction_summary = get_option("reaction_buttons_reaction_summary");
+	if ($reaction_summary != "") {
+		$html .= reaction_buttons_reaction_summary($reaction_summary);
+	}
 
 	// If a tagline is set, display it above the buttons
 	$tagline = get_option("reaction_buttons_tagline");
@@ -233,6 +239,10 @@ function reaction_buttons_restore_config($force=false) {
 	}
 
 	if ( $force or !( get_option('reaction_buttons_already_voted_text')) ) {
+		update_option('reaction_buttons_already_voted_text', "");
+	}
+
+	if ( $force or !( get_option('reaction_buttons_reaction_summary')) ) {
 		update_option('reaction_buttons_already_voted_text', "");
 	}
 
@@ -616,7 +626,7 @@ function reaction_buttons_submenu() {
 				update_option('reaction_buttons_'.$val,false);
 		}
 
-		foreach ( array('tagline','already_voted_text') as $val ) {
+		foreach ( array('tagline', 'already_voted_text', 'reaction_summary') as $val ) {
 			if ( !$_POST[$val] )
 				update_option( 'reaction_buttons_'.$val, '');
 			else
@@ -773,6 +783,15 @@ function reaction_buttons_submenu() {
 					<td>
 						<?php _e("A text to popup if a users tries to vote twice. Leave empty to disable this function.", 'reaction_buttons'); ?><br/>
 						<input size="80" type="text" name="already_voted_text" value="<?php echo attribute_escape(stripslashes(get_option('reaction_buttons_already_voted_text'))); ?>" />
+					</td>
+				</tr>
+				<tr>
+					<th scope="row" valign="top">
+						<?php _e("Reaction Summary", "reaction_buttons"); ?>
+					</th>
+					<td>
+						<?php _e("Reaction summary. Use it to tell your users what's been clicked most. Leave empty to disable this function.", 'reaction_buttons'); ?><br/><?php _e("%s is going to be replaced with the name of the most clicked button, e.g. 'Most people think this post is %s!'", 'reaction_buttons'); ?>
+						<input size="80" type="text" name="reaction_summary" value="<?php echo attribute_escape(stripslashes(get_option('reaction_buttons_reaction_summary'))); ?>" />
 					</td>
 				</tr>
 				<tr>
@@ -1123,35 +1142,67 @@ function reaction_buttons_init_widget() {
 add_action("plugins_loaded", "reaction_buttons_init_widget");
 
 /**
- * Displays the most clicked post of each button (not a widget)
+ * Function for the shortcode [reaction_buttons_most_clicks]
+ *
+ * shortcode [reaction_buttons_most_clicks] shows the most clicked post of each button.
+ * Takes "limit_posts" as parameter to specify the number of posts to show.
+ * (default 3 per button)
  */
 function reaction_buttons_most_clicks($atts) {
 	extract(shortcode_atts(array('limit_posts' => 3,), $atts));
-
 
 	$html = "<div class='reaction_buttons_most_clicks'>";
 	$html .= reaction_buttons_get_top_button_posts($limit_posts, $page = 1, $output_as_table = false);
 	$html .= "</div>";
 	return $html;
 }
-
-/**
- * shortcode [reaction_buttons_most_clicks] shows the most clicked post of each button.
- * Takes "limit_posts" as parameter to specify the number of posts to show.
- * (default 3 per button)
- */
 add_shortcode('reaction_buttons_most_clicks', 'reaction_buttons_most_clicks');
 
 
 function reaction_buttons_click_count($post_id){
-        global $wpdb;
-        $table = $wpdb->prefix . "postmeta";
+	global $wpdb;
+	$table = $wpdb->prefix . "postmeta";
 
-        if(!is_int($post_id)) return;
+	if(!is_int($post_id)) return;
 
-        $result = $wpdb->get_results("select sum(meta_value) as count from $table where post_id=$post_id and meta_key like '_reaction_buttons%'");
-        return $result[0]->count;
-
+	$result = $wpdb->get_results("select sum(meta_value) as count from $table where post_id=$post_id and meta_key like '_reaction_buttons%'");
+	return $result[0]->count;
 }
+
+/**
+ * Returns a text including the name of the button clicked the most. 
+ * Use "%s" in the summary_text for the position of the buttons name.
+ */
+function reaction_buttons_reaction_summary($summary_text = "Most people think this post is %s!"){
+	global $wpdb;
+	$table = $wpdb->prefix . "postmeta";
+
+	// find the most clicked button for this post
+	$buttons = $wpdb->get_results("SELECT meta_key FROM ". $table ." WHERE post_id=". get_the_ID() ." AND meta_key LIKE '_reaction_buttons%'  ORDER BY CAST(meta_value AS UNSIGNED) DESC LIMIT 1;", ARRAY_A);
+
+	// return nothing in case nothing is found (e.g. no button clicked yet) and aquire the button name
+	if(empty($buttons)) return "";
+	if(0 != strpos($buttons[0]['meta_key'], '_reaction_buttons_')){
+		return "";
+	}
+	$button = substr($buttons[0]['meta_key'], 18);
+	
+	return "<div class='reaction_buttons_reaction_summary'>". sprintf($summary_text, $button) ."</div>";
+}
+
+/**
+ * Function for the shortcode [reaction_buttons_reaction_summary]
+ * 
+ * shortcode [reaction_buttons_reaction_summary] returns a text including the
+ * name of the button clicked the most. The text can be configured with the
+ * variable "summary_text" in the shortcode. Use "%s" in the text for the
+ * position of the buttons name.
+ */
+function reaction_buttons_reaction_summary_shortcode($atts){
+	extract(shortcode_atts(array('summary_text' => "Most people think this post is %s!"), $atts));
+	
+	return reaction_buttons_reaction_summary($summary_text);
+}
+add_shortcode('reaction_buttons_reaction_summary', 'reaction_buttons_reaction_summary_shortcode');
 
 ?>
