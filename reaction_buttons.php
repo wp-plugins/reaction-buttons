@@ -3,7 +3,7 @@
    Plugin Name: Reaction Buttons
    Plugin URI: http://blog.jl42.de/reaction-buttons/
    Description: Adds Buttons for very simple and fast feedback to your post. Inspired by Blogger.
-   Version: 1.2
+   Version: 1.3
    Author: Jakob Lenfers
    Author URI: http://blog.jl42.de
 
@@ -68,12 +68,14 @@ function reaction_buttons_html() {
 	// vote settings
 	$already_voted_text = get_option("reaction_buttons_already_voted_text");
 	$only_one_vote = get_option("reaction_buttons_only_one_vote");
+	$use_as_counter = get_option("reaction_buttons_use_as_counter");
+	$use_cookies = get_option("reaction_buttons_usecookies") && !$use_as_counter;
 
 	// show results only after your vote
 	$show_after_votes = get_option("reaction_buttons_show_after_votes");
 
 	// if use of cookies is activated, check for them
-	if(get_option(reaction_buttons_usecookies)){
+	if($use_cookies){
 		$json = stripslashes($_COOKIE["reaction_buttons_" . $post_id]);
 		$cookie = json_decode($json, true);
 	}
@@ -96,11 +98,13 @@ function reaction_buttons_html() {
 
 	$already_voted_other = false;
 	// checks if the user has already voted on this post
-	foreach($buttons as $button){
-		$clean_button = stripslashes(trim($button));
-		if (array_key_exists(addslashes($clean_button), $cookie) && $cookie[addslashes($clean_button)]) {
-			$already_voted_other = true;
-			break;
+	if(!$use_as_counter){
+		foreach($buttons as $button){
+			$clean_button = stripslashes(trim($button));
+			if (array_key_exists(addslashes($clean_button), $cookie) && $cookie[addslashes($clean_button)]) {
+				$already_voted_other = true;
+				break;
+			}
 		}
 	}
 
@@ -110,7 +114,7 @@ function reaction_buttons_html() {
 		$count = intval(get_post_meta(get_the_ID(), "_reaction_buttons_" . $clean_button, true));
 		$html .= "<a class='reaction_button reaction_button_" . prepare_attr_jl($button) . "_count";
 		$voted = array_key_exists(addslashes($clean_button), $cookie) && $cookie[addslashes($clean_button)];
-		if($voted || $only_one_vote && $already_voted_other){
+		if(($voted || $only_one_vote && $already_voted_other) && !$use_as_counter){
 			if(empty($already_voted_text)){
 				$html .= " voted'>";
 			}
@@ -220,6 +224,10 @@ function reaction_buttons_restore_config($force=false) {
 		update_option('reaction_buttons_only_one_vote', false);
 	}
 
+		if ( $force or !( get_option('reaction_buttons_use_as_counter')) ) {
+		update_option('reaction_buttons_use_as_counter', false);
+	}
+	
 	if ( $force or !( get_option('reaction_buttons_usecookies')) ) {
 		update_option('reaction_buttons_usecookies', true);
 	}
@@ -388,6 +396,7 @@ function reaction_buttons_js_header() {
 	$already_voted_text = get_option("reaction_buttons_already_voted_text");
 	$only_one_vote = get_option("reaction_buttons_only_one_vote"); 
 	$show_after_votes = get_option("reaction_buttons_show_after_votes");
+	$use_as_counter = get_option("reaction_buttons_use_as_counter");
 	?>
 	<script	type='text/javascript'><!--
 	function prepare_attr_jl(str) {
@@ -397,29 +406,33 @@ function reaction_buttons_js_header() {
 		var already_voted_text = '<?php echo htmlspecialchars($already_voted_text); ?>';
 		var only_one_vote = <?php echo $only_one_vote ? "true" : "false"; ?>;
 		var show_after_votes = <?php echo $show_after_votes ? "true" : "false"; ?>;
+		var use_as_counter = <?php echo $use_as_counter ? "true" : "false"; ?>;
 
 		if(jQuery("#reaction_buttons_post" + post_id + " .reaction_button_" + prepare_attr_jl(button) + "_count").hasClass('voted')){
 			return;
 		}
-		// remove the href attribute before sending the request to make
-		// sure no one votes more than once by clicking ten times fast
-		if(only_one_vote){
-			// remove all the href's from the posts and replace it by the
-			// alert not to vote twice if set
-			if(already_voted_text){
-				jQuery("#reaction_buttons_post" + post_id + " .reaction_button").attr('href', 'javascript:alert(\'' + already_voted_text + '\');');
+		
+		if(!use_as_counter){
+			// remove the href attribute before sending the request to make
+			// sure no one votes more than once by clicking ten times fast
+			if(only_one_vote){
+				// remove all the href's from the posts and replace it by the
+				// alert not to vote twice if set
+				if(already_voted_text){
+					jQuery("#reaction_buttons_post" + post_id + " .reaction_button").attr('href', 'javascript:alert(\'' + already_voted_text + '\');');
+				}
+				else{
+					jQuery("#reaction_buttons_post" + post_id + " .reaction_button").removeAttr('href');
+				}
 			}
 			else{
-				jQuery("#reaction_buttons_post" + post_id + " .reaction_button").removeAttr('href');
-			}
-		}
-		else{
-			// remove/replace only on the clicked button
-			if(already_voted_text){
-				jQuery("#reaction_buttons_post" + post_id + " .reaction_button_" + prepare_attr_jl(button) + "_count").attr('href', 'javascript:alert(\'' + already_voted_text + '\');');
-			}
-			else{
-				jQuery("#reaction_buttons_post" + post_id + " .reaction_button_" + prepare_attr_jl(button) + "_count").removeAttr('href');
+				// remove/replace only on the clicked button
+				if(already_voted_text){
+					jQuery("#reaction_buttons_post" + post_id + " .reaction_button_" + prepare_attr_jl(button) + "_count").attr('href', 'javascript:alert(\'' + already_voted_text + '\');');
+				}
+				else{
+					jQuery("#reaction_buttons_post" + post_id + " .reaction_button_" + prepare_attr_jl(button) + "_count").removeAttr('href');
+				}
 			}
 		}
 		jQuery.ajax({
@@ -596,7 +609,7 @@ function reaction_buttons_submenu() {
 		$error = "";
 
 		// save the different settings (boolean, text, array of bool)
-		foreach ( array('activate', 'usecss', 'usecookies', 'only_one_vote', 'show_after_votes', 'clear_supported_caches') as $val ) {
+		foreach ( array('activate', 'usecss', 'usecookies', 'only_one_vote', 'use_as_counter', 'show_after_votes', 'clear_supported_caches') as $val ) {
 			if ( isset($_POST[$val]) && $_POST[$val] )
 				update_option('reaction_buttons_'.$val,true);
 			else
@@ -739,10 +752,18 @@ function reaction_buttons_submenu() {
 				</tr>
 				<tr>
 					<th scope="row" valign="top">
-						<?php _e("Use Cookies:", "reaction_buttons"); ?>
+						<?php _e("Use as counter:", "reaction_buttons"); ?>
 					</th>
 					<td>
-						<input type="checkbox" name="usecookies" <?php checked( get_option('reaction_buttons_usecookies'), true ); ?> /> <?php _e("Use cookies to make it harder to vote twice?", "reaction_buttons"); ?>
+						<input type="checkbox" name="use_as_counter" <?php checked( get_option('reaction_buttons_use_as_counter')); ?> /> <?php _e("If checked a user can click multiple times on the button.", "reaction_buttons"); ?>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row" valign="top">
+						<?php _e("Use cookies:", "reaction_buttons"); ?>
+					</th>
+					<td>
+						<input type="checkbox" name="usecookies" <?php checked( get_option('reaction_buttons_usecookies'), true ); ?> /> <?php _e("Use cookies to make it harder to vote twice? (Only if 'Use as counters' is disabled)", "reaction_buttons"); ?>
 					</td>
 				</tr>
 				<tr>
