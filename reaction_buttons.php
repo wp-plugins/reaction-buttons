@@ -3,13 +3,13 @@
    Plugin Name: Reaction Buttons
    Plugin URI: http://blog.jl42.de/reaction-buttons/
    Description: Adds Buttons for very simple and fast feedback to your post. Inspired by Blogger.
-   Version: 1.2
+   Version: 1.4.1
    Author: Jakob Lenfers
    Author URI: http://blog.jl42.de
 
    I used the sociable plugin as template.
 
-   Copyright 2010-present Jakob Lenfers <jakob@drss.de>
+   Copyright 2010-present Jakob Lenfers <jakob@lenfers.org>
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -68,12 +68,14 @@ function reaction_buttons_html() {
 	// vote settings
 	$already_voted_text = get_option("reaction_buttons_already_voted_text");
 	$only_one_vote = get_option("reaction_buttons_only_one_vote");
+	$use_as_counter = get_option("reaction_buttons_use_as_counter");
+	$use_cookies = get_option("reaction_buttons_usecookies") && !$use_as_counter;
 
 	// show results only after your vote
 	$show_after_votes = get_option("reaction_buttons_show_after_votes");
 
 	// if use of cookies is activated, check for them
-	if(get_option(reaction_buttons_usecookies)){
+	if($use_cookies){
 		$json = stripslashes($_COOKIE["reaction_buttons_" . $post_id]);
 		$cookie = json_decode($json, true);
 	}
@@ -81,6 +83,12 @@ function reaction_buttons_html() {
 
 	// Start preparing the output
 	$html = "\n<div id='reaction_buttons_post" . $post_id . "' class='reaction_buttons'>\n";
+
+	// If a reaction summary is set, display it above the rest
+	$reaction_summary = get_option("reaction_buttons_reaction_summary");
+	if ($reaction_summary != "") {
+		$html .= reaction_buttons_reaction_summary($reaction_summary);
+	}
 
 	// If a tagline is set, display it above the buttons
 	$tagline = get_option("reaction_buttons_tagline");
@@ -96,11 +104,13 @@ function reaction_buttons_html() {
 
 	$already_voted_other = false;
 	// checks if the user has already voted on this post
-	foreach($buttons as $button){
-		$clean_button = stripslashes(trim($button));
-		if (array_key_exists(addslashes($clean_button), $cookie) && $cookie[addslashes($clean_button)]) {
-			$already_voted_other = true;
-			break;
+	if(!$use_as_counter){
+		foreach($buttons as $button){
+			$clean_button = stripslashes(trim($button));
+			if (array_key_exists(addslashes($clean_button), $cookie) && $cookie[addslashes($clean_button)]) {
+				$already_voted_other = true;
+				break;
+			}
 		}
 	}
 
@@ -110,7 +120,7 @@ function reaction_buttons_html() {
 		$count = intval(get_post_meta(get_the_ID(), "_reaction_buttons_" . $clean_button, true));
 		$html .= "<a class='reaction_button reaction_button_" . prepare_attr_jl($button) . "_count";
 		$voted = array_key_exists(addslashes($clean_button), $cookie) && $cookie[addslashes($clean_button)];
-		if($voted || $only_one_vote && $already_voted_other){
+		if(($voted || $only_one_vote && $already_voted_other) && !$use_as_counter){
 			if(empty($already_voted_text)){
 				$html .= " voted'>";
 			}
@@ -220,11 +230,19 @@ function reaction_buttons_restore_config($force=false) {
 		update_option('reaction_buttons_only_one_vote', false);
 	}
 
+		if ( $force or !( get_option('reaction_buttons_use_as_counter')) ) {
+		update_option('reaction_buttons_use_as_counter', false);
+	}
+	
 	if ( $force or !( get_option('reaction_buttons_usecookies')) ) {
 		update_option('reaction_buttons_usecookies', true);
 	}
 
 	if ( $force or !( get_option('reaction_buttons_already_voted_text')) ) {
+		update_option('reaction_buttons_already_voted_text', "");
+	}
+
+	if ( $force or !( get_option('reaction_buttons_reaction_summary')) ) {
 		update_option('reaction_buttons_already_voted_text', "");
 	}
 
@@ -264,7 +282,7 @@ function reaction_buttons_button_statistic_page(){
         <table class="form-table" border="1" style="border: 1px solid #818181;">
 			<?php
             $pagination = reaction_buttons_button_paginate_statistics($page = 1, $per_page = 10);
-            echo reaction_buttons_get_top_button_posts($pagination['perPage'], $pagination['page'], $output_as_table = true);
+            echo reaction_buttons_get_top_button_posts($pagination['perPage'],  0, "", $pagination['page'], $output_as_table = true);
             ?>
         </table>
         <div style="width: 100%; margin-top: 20px;">
@@ -388,6 +406,7 @@ function reaction_buttons_js_header() {
 	$already_voted_text = get_option("reaction_buttons_already_voted_text");
 	$only_one_vote = get_option("reaction_buttons_only_one_vote"); 
 	$show_after_votes = get_option("reaction_buttons_show_after_votes");
+	$use_as_counter = get_option("reaction_buttons_use_as_counter");
 	?>
 	<script	type='text/javascript'><!--
 	function prepare_attr_jl(str) {
@@ -397,29 +416,33 @@ function reaction_buttons_js_header() {
 		var already_voted_text = '<?php echo htmlspecialchars($already_voted_text); ?>';
 		var only_one_vote = <?php echo $only_one_vote ? "true" : "false"; ?>;
 		var show_after_votes = <?php echo $show_after_votes ? "true" : "false"; ?>;
+		var use_as_counter = <?php echo $use_as_counter ? "true" : "false"; ?>;
 
 		if(jQuery("#reaction_buttons_post" + post_id + " .reaction_button_" + prepare_attr_jl(button) + "_count").hasClass('voted')){
 			return;
 		}
-		// remove the href attribute before sending the request to make
-		// sure no one votes more than once by clicking ten times fast
-		if(only_one_vote){
-			// remove all the href's from the posts and replace it by the
-			// alert not to vote twice if set
-			if(already_voted_text){
-				jQuery("#reaction_buttons_post" + post_id + " .reaction_button").attr('href', 'javascript:alert(\'' + already_voted_text + '\');');
+		
+		if(!use_as_counter){
+			// remove the href attribute before sending the request to make
+			// sure no one votes more than once by clicking ten times fast
+			if(only_one_vote){
+				// remove all the href's from the posts and replace it by the
+				// alert not to vote twice if set
+				if(already_voted_text){
+					jQuery("#reaction_buttons_post" + post_id + " .reaction_button").attr('href', 'javascript:alert(\'' + already_voted_text + '\');');
+				}
+				else{
+					jQuery("#reaction_buttons_post" + post_id + " .reaction_button").removeAttr('href');
+				}
 			}
 			else{
-				jQuery("#reaction_buttons_post" + post_id + " .reaction_button").removeAttr('href');
-			}
-		}
-		else{
-			// remove/replace only on the clicked button
-			if(already_voted_text){
-				jQuery("#reaction_buttons_post" + post_id + " .reaction_button_" + prepare_attr_jl(button) + "_count").attr('href', 'javascript:alert(\'' + already_voted_text + '\');');
-			}
-			else{
-				jQuery("#reaction_buttons_post" + post_id + " .reaction_button_" + prepare_attr_jl(button) + "_count").removeAttr('href');
+				// remove/replace only on the clicked button
+				if(already_voted_text){
+					jQuery("#reaction_buttons_post" + post_id + " .reaction_button_" + prepare_attr_jl(button) + "_count").attr('href', 'javascript:alert(\'' + already_voted_text + '\');');
+				}
+				else{
+					jQuery("#reaction_buttons_post" + post_id + " .reaction_button_" + prepare_attr_jl(button) + "_count").removeAttr('href');
+				}
 			}
 		}
 		jQuery.ajax({
@@ -596,14 +619,14 @@ function reaction_buttons_submenu() {
 		$error = "";
 
 		// save the different settings (boolean, text, array of bool)
-		foreach ( array('activate', 'usecss', 'usecookies', 'only_one_vote', 'show_after_votes', 'clear_supported_caches') as $val ) {
+		foreach ( array('activate', 'usecss', 'usecookies', 'only_one_vote', 'use_as_counter', 'show_after_votes', 'clear_supported_caches') as $val ) {
 			if ( isset($_POST[$val]) && $_POST[$val] )
 				update_option('reaction_buttons_'.$val,true);
 			else
 				update_option('reaction_buttons_'.$val,false);
 		}
 
-		foreach ( array('tagline','already_voted_text') as $val ) {
+		foreach ( array('tagline', 'already_voted_text', 'reaction_summary') as $val ) {
 			if ( !$_POST[$val] )
 				update_option( 'reaction_buttons_'.$val, '');
 			else
@@ -739,10 +762,18 @@ function reaction_buttons_submenu() {
 				</tr>
 				<tr>
 					<th scope="row" valign="top">
-						<?php _e("Use Cookies:", "reaction_buttons"); ?>
+						<?php _e("Use as counter:", "reaction_buttons"); ?>
 					</th>
 					<td>
-						<input type="checkbox" name="usecookies" <?php checked( get_option('reaction_buttons_usecookies'), true ); ?> /> <?php _e("Use cookies to make it harder to vote twice?", "reaction_buttons"); ?>
+						<input type="checkbox" name="use_as_counter" <?php checked( get_option('reaction_buttons_use_as_counter')); ?> /> <?php _e("If checked a user can click multiple times on the button.", "reaction_buttons"); ?>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row" valign="top">
+						<?php _e("Use cookies:", "reaction_buttons"); ?>
+					</th>
+					<td>
+						<input type="checkbox" name="usecookies" <?php checked( get_option('reaction_buttons_usecookies'), true ); ?> /> <?php _e("Use cookies to make it harder to vote twice? (Only if 'Use as counters' is disabled)", "reaction_buttons"); ?>
 					</td>
 				</tr>
 				<tr>
@@ -752,6 +783,15 @@ function reaction_buttons_submenu() {
 					<td>
 						<?php _e("A text to popup if a users tries to vote twice. Leave empty to disable this function.", 'reaction_buttons'); ?><br/>
 						<input size="80" type="text" name="already_voted_text" value="<?php echo attribute_escape(stripslashes(get_option('reaction_buttons_already_voted_text'))); ?>" />
+					</td>
+				</tr>
+				<tr>
+					<th scope="row" valign="top">
+						<?php _e("Reaction Summary", "reaction_buttons"); ?>
+					</th>
+					<td>
+						<?php _e("Reaction summary. Use it to tell your users what's been clicked most. Leave empty to disable this function.", 'reaction_buttons'); ?><br/><?php _e("%s is going to be replaced with the name of the most clicked button, e.g. 'Most people think this post is %s!'", 'reaction_buttons'); ?>
+						<input size="80" type="text" name="reaction_summary" value="<?php echo attribute_escape(stripslashes(get_option('reaction_buttons_reaction_summary'))); ?>" />
 					</td>
 				</tr>
 				<tr>
@@ -850,13 +890,19 @@ add_filter( 'plugin_action_links', 'reaction_buttons_filter_plugin_actions', 10,
  * Function to gather the top $limit_posts for each Raction Button. Used for the widget
  * and the shortcode
  */
-function reaction_buttons_get_top_button_posts($limit_posts = 3, $page = 1, $output_as_table = false){
+function reaction_buttons_get_top_button_posts($limit_posts = 3, $excerpt_length = 0, $only_buttons = "", $page = 1, $output_as_table = false){
 	global $wpdb;
 	$table = $wpdb->prefix . "postmeta";
+
 	// check options
 	if($limit_posts < 1) return "";
-	// get the buttons from the options
+
+	// get the buttons from the options and remove the unwanted ones if applicable
 	$buttons = explode(",", preg_replace("/,\s+/", ",", get_option('reaction_buttons_button_names')));
+	if(!empty($only_buttons)){
+		$buttons = array_intersect($buttons, $only_buttons);
+	}
+
 	// output var
 	$html = "";
 	$html_table_th = "";
@@ -886,6 +932,9 @@ function reaction_buttons_get_top_button_posts($limit_posts = 3, $page = 1, $out
 			}
 
 			$html .= "<a href='" . get_permalink($post->ID) . "'>" . $post->post_title . '&nbsp;<span style="color: #000; font-weight: bold">('.$count.')</span></a>';
+			if($excerpt_length > 0){
+				$html .= "<p class='reaction_buttons_excerpt'>" . wp_trim_words($post->post_content, $excerpt_length) . "</p>";
+			}
 
 			if($limit_posts > 1){
 				$output_as_table == false ? $html .= "</li>" : $html .= "";
@@ -1001,10 +1050,19 @@ function reaction_buttons_widget() {
 	$title = get_option('reaction_buttons_widget_title');
 	if (empty($title)) $title = __("Most clicked buttons", 'reaction_buttons');
 
+	// should an exceprt be shown and how many words?
+	$excerpt_count = get_option('reaction_buttons_widget_excerpt');
+	if (!(is_numeric($excerpt_count) && 0 <= intval($excerpt_count))) $excerpt_count = 0;
+	$excerpt_count = intval($excerpt_count);
+
+	// should only a few buttons be shown?
+	$only_buttons = get_option('reaction_buttons_widget_buttons');
+	$only_buttons = explode(",", preg_replace("/,\s+/", ",", $only_buttons));
+
 	// gather the output
 	$widget = "<div class='widget_reaction_buttons widget'>";
 	$widget .= "<h2 class='widgettitle'>" . $title . "</h2>";
-	$widget .= reaction_buttons_get_top_button_posts($limit_posts, $page = 1, $output_as_table = false);
+	$widget .= reaction_buttons_get_top_button_posts($limit_posts, $excerpt_count, $only_buttons, $page = 1, $output_as_table = false);
 	$widget .= "</div>";
 	echo $widget;
 }
@@ -1021,6 +1079,10 @@ function reaction_buttons_widget_control(){
 	<input name="reaction_buttons_widget_title" type="text" value="<?php echo get_option('reaction_buttons_widget_title') ?>" /></label></p>
 	<p><label><?php _e("How many posts to show:", 'reaction_buttons') ?><br />
 	<input name="reaction_buttons_widget_count" type="text" value="<?php echo get_option('reaction_buttons_widget_count'); ?>" /></label></p>
+	<p><label><?php _e("How many words as excerpts? 0 deactivates the excerpt:", 'reaction_buttons') ?><br />
+	<input name="reaction_buttons_widget_excerpt" type="text" value="<?php echo get_option('reaction_buttons_widget_excerpt'); ?>" /></label></p>
+	<p><label><?php _e("Show only those buttons (comma seperated, default all):", 'reaction_buttons') ?><br />
+	<input name="reaction_buttons_widget_buttons" type="text" value="<?php echo get_option('reaction_buttons_widget_buttons'); ?>" /></label></p>
 
 	<?php
 	// validate the input and update the settings
@@ -1036,6 +1098,18 @@ function reaction_buttons_widget_control(){
 		else {
 			reaction_buttons_message(__("Please input a positiv number!", 'reaction_buttons'));
 		}
+	}
+	if (isset($_POST['reaction_buttons_widget_excerpt'])){
+		$excerpt = $_POST['reaction_buttons_widget_excerpt'];
+		if (is_numeric($excerpt) && 0 <= intval($excerpt)) {
+			update_option('reaction_buttons_widget_excerpt', attribute_escape($excerpt));
+		}
+		else {
+			update_option('reaction_buttons_widget_excerpt', 0);
+		}
+	}
+	if (isset($_POST['reaction_buttons_widget_buttons'])){
+		update_option('reaction_buttons_widget_buttons', attribute_escape($_POST['reaction_buttons_widget_buttons']));
 	}
 }
 
@@ -1102,35 +1176,71 @@ function reaction_buttons_init_widget() {
 add_action("plugins_loaded", "reaction_buttons_init_widget");
 
 /**
- * Displays the most clicked post of each button (not a widget)
+ * Function for the shortcode [reaction_buttons_most_clicks]
+ *
+ * shortcode [reaction_buttons_most_clicks] shows the most clicked post of each button.
+ * Takes the following parameter:
+ * * limit_posts: to specify the number of posts to show per button. (default 3)
+ * * excerpt_length: number of words of the article to show as an excerpt.
+ *                   0 deactivates the excerpt. (default deactivated)
+ * * only_buttons: comma separated list of buttons to show. Default is to show all
  */
 function reaction_buttons_most_clicks($atts) {
-	extract(shortcode_atts(array('limit_posts' => 3,), $atts));
+	extract(shortcode_atts(array('limit_posts' => 3, 'excerpt_length' => 0, 'only_buttons' => ""), $atts));
 
-
+	$only_buttons = explode(",", preg_replace("/,\s+/", ",", $only_buttons));
 	$html = "<div class='reaction_buttons_most_clicks'>";
-	$html .= reaction_buttons_get_top_button_posts($limit_posts, $page = 1, $output_as_table = false);
+	$html .= reaction_buttons_get_top_button_posts($limit_posts, $excerpt_length, $only_buttons, $page = 1, $output_as_table = false);
 	$html .= "</div>";
 	return $html;
 }
-
-/**
- * shortcode [reaction_buttons_most_clicks] shows the most clicked post of each button.
- * Takes "limit_posts" as parameter to specify the number of posts to show.
- * (default 3 per button)
- */
 add_shortcode('reaction_buttons_most_clicks', 'reaction_buttons_most_clicks');
 
 
 function reaction_buttons_click_count($post_id){
-        global $wpdb;
-        $table = $wpdb->prefix . "postmeta";
+	global $wpdb;
+	$table = $wpdb->prefix . "postmeta";
 
-        if(!is_int($post_id)) return;
+	if(!is_int($post_id)) return;
 
-        $result = $wpdb->get_results("select sum(meta_value) as count from $table where post_id=$post_id and meta_key like '_reaction_buttons%'");
-        return $result[0]->count;
-
+	$result = $wpdb->get_results("select sum(meta_value) as count from $table where post_id=$post_id and meta_key like '_reaction_buttons%'");
+	return $result[0]->count;
 }
+
+/**
+ * Returns a text including the name of the button clicked the most. 
+ * Use "%s" in the summary_text for the position of the buttons name.
+ */
+function reaction_buttons_reaction_summary($summary_text = "Most people think this post is %s!"){
+	global $wpdb;
+	$table = $wpdb->prefix . "postmeta";
+
+	// find the most clicked button for this post
+	$buttons = $wpdb->get_results("SELECT meta_key FROM ". $table ." WHERE post_id=". get_the_ID() ." AND meta_key LIKE '_reaction_buttons%'  ORDER BY CAST(meta_value AS UNSIGNED) DESC LIMIT 1;", ARRAY_A);
+
+	// return nothing in case nothing is found (e.g. no button clicked yet) and aquire the button name
+	if(empty($buttons)) return "";
+	if(0 != strpos($buttons[0]['meta_key'], '_reaction_buttons_')){
+		return "";
+	}
+	$button = substr($buttons[0]['meta_key'], 18);
+	
+	return "<div class='reaction_buttons_reaction_summary'>". sprintf($summary_text, $button) ."</div>";
+}
+
+/**
+ * Function for the shortcode [reaction_buttons_reaction_summary]
+ * 
+ * shortcode [reaction_buttons_reaction_summary] returns a text including the
+ * name of the button clicked the most. The text can be configured with the
+ * variable "summary_text" in the shortcode. Use "%s" in the text for the
+ * position of the buttons name.
+ */
+function reaction_buttons_reaction_summary_shortcode($atts){
+	extract(shortcode_atts(array('summary_text' => "Most people think this post is %s!"), $atts));
+	
+	return reaction_buttons_reaction_summary($summary_text);
+}
+add_shortcode('reaction_buttons_reaction_summary', 'reaction_buttons_reaction_summary_shortcode');
 
 ?>
