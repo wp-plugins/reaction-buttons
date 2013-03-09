@@ -1,8 +1,10 @@
 === Reaction Buttons ===
 Tags: feedback, polls, button, comment
 Requires at least: 2.9.1
-Tested up to: 3.2.1
-Stable tag: 1.2
+Tested up to: 3.5.1
+Stable tag: 1.4
+License: GPLv2 or later
+Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=MLX3Z7ZD5AJ4Q
 
 Adds buttons for very simple and fast feedback to your post. Inspired by Blogger.
 
@@ -20,9 +22,16 @@ Nothing fancy, just like any wordpress addon:
 1. Activate the plugin through the 'Plugins' menu in WordPress
 1. Optionally configure the plugin in the settings tab
 
-You can also use the widget to show the top x posts with the most clicks for each button in your sidebar. Or alternatively you can use the shortcode [reaction_buttons_most_clicks] to insert the same information somewhere in your post. (Takes limit_posts as argument to set up how many posts per button should be shown: Default: [reaction_buttons_most_clicks limit_posts=3])
+* You can also use the widget to show the top x posts with the most clicks for each button in your sidebar. Or alternatively you can use the shortcode [reaction_buttons_most_clicks] to insert the same information somewhere in your post. The default is [reaction_buttons_most_clicks limit_posts=3]. It takes the following arguments:
+ * limit_posts: how many posts per button should be shown
+ * limit_posts: specify the number of posts to show per button. (default 3)
+ * excerpt_length: number of words of the article to show as an excerpt. 0 deactivates the excerpt. (default deactivated)
+ * only_buttons: comma separated list of buttons to show. Default is to show all
+* There is another shortcode for the reaction summary. Engage with your users by including the most clicked button in a summary, e.g. "Most people found this post interesting!" while "interesting" is the most clicked button. Activate it in the options or place it anywhere with the shortcode [reaction_buttons_reaction_summary], which takes summary_text as an argument. In the summary text you can use %s as a place holder for the most clicked button, e.g. [reaction_buttons_reaction_summary summary_text="Most people found this post %s!"] for the example above.
 
 == Frequently Asked Questions ==
+= Are there any shortcodes? =
+* They are described in the [install tab](http://wordpress.org/extend/plugins/reaction-buttons/installation/).
 
 = My reaction buttons don't update =
 * Do you use any special characters like exclamation marks in your button names?
@@ -44,6 +53,16 @@ You can also use the widget to show the top x posts with the most clicks for eac
 2. Shows the sidebar widget with some dummy data.
 
 == Changelog ==
+= 1.4 =
+* new features in the button statistics widget (and shortcode):
+ * option show an excerpt of the post
+ * option to only display selected buttons
+* Added donate link in the wordpress plugin directory
+
+= 1.3 =
+* added a feature to let users vote multiple times
+* added a "reaction summary" as option and shortcode: Engage with your users by including the most clicked button in a summary, e.g. "Most people found this post interesting!" while "interesting" is the most clicked button.
+
 = 1.2 =
 * changed cookie handling
 * added support for deleting the page cache after clicking a button
