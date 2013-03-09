@@ -1,8 +1,8 @@
 === Reaction Buttons ===
 Tags: feedback, polls, button, comment
-Requires at least: 2.9.1
+Requires at least: 3.3
 Tested up to: 3.5.1
-Stable tag: 1.4
+Stable tag: 1.4.1
 License: GPLv2 or later
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=MLX3Z7ZD5AJ4Q
 
@@ -53,6 +53,9 @@ Nothing fancy, just like any wordpress addon:
 2. Shows the sidebar widget with some dummy data.
 
 == Changelog ==
+= 1.4.1 =
+* had to bump the required version of wordpress to 3.3 because of the new button statistics widgets features.
+
 = 1.4 =
 * new features in the button statistics widget (and shortcode):
  * option show an excerpt of the post
