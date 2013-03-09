@@ -3,7 +3,7 @@
    Plugin Name: Reaction Buttons
    Plugin URI: http://blog.jl42.de/reaction-buttons/
    Description: Adds Buttons for very simple and fast feedback to your post. Inspired by Blogger.
-   Version: 1.3
+   Version: 1.4
    Author: Jakob Lenfers
    Author URI: http://blog.jl42.de
 
@@ -282,7 +282,7 @@ function reaction_buttons_button_statistic_page(){
         <table class="form-table" border="1" style="border: 1px solid #818181;">
 			<?php
             $pagination = reaction_buttons_button_paginate_statistics($page = 1, $per_page = 10);
-            echo reaction_buttons_get_top_button_posts($pagination['perPage'], $pagination['page'], $output_as_table = true);
+            echo reaction_buttons_get_top_button_posts($pagination['perPage'],  0, "", $pagination['page'], $output_as_table = true);
             ?>
         </table>
         <div style="width: 100%; margin-top: 20px;">
@@ -890,13 +890,19 @@ add_filter( 'plugin_action_links', 'reaction_buttons_filter_plugin_actions', 10,
  * Function to gather the top $limit_posts for each Raction Button. Used for the widget
  * and the shortcode
  */
-function reaction_buttons_get_top_button_posts($limit_posts = 3, $page = 1, $output_as_table = false){
+function reaction_buttons_get_top_button_posts($limit_posts = 3, $excerpt_length = 0, $only_buttons = "", $page = 1, $output_as_table = false){
 	global $wpdb;
 	$table = $wpdb->prefix . "postmeta";
+
 	// check options
 	if($limit_posts < 1) return "";
-	// get the buttons from the options
+
+	// get the buttons from the options and remove the unwanted ones if applicable
 	$buttons = explode(",", preg_replace("/,\s+/", ",", get_option('reaction_buttons_button_names')));
+	if(!empty($only_buttons)){
+		$buttons = array_intersect($buttons, $only_buttons);
+	}
+
 	// output var
 	$html = "";
 	$html_table_th = "";
@@ -926,6 +932,9 @@ function reaction_buttons_get_top_button_posts($limit_posts = 3, $page = 1, $out
 			}
 
 			$html .= "<a href='" . get_permalink($post->ID) . "'>" . $post->post_title . '&nbsp;<span style="color: #000; font-weight: bold">('.$count.')</span></a>';
+			if($excerpt_length > 0){
+				$html .= "<p class='reaction_buttons_excerpt'>" . wp_trim_words($post->post_content, $excerpt_length) . "</p>";
+			}
 
 			if($limit_posts > 1){
 				$output_as_table == false ? $html .= "</li>" : $html .= "";
@@ -1041,10 +1050,19 @@ function reaction_buttons_widget() {
 	$title = get_option('reaction_buttons_widget_title');
 	if (empty($title)) $title = __("Most clicked buttons", 'reaction_buttons');
 
+	// should an exceprt be shown and how many words?
+	$excerpt_count = get_option('reaction_buttons_widget_excerpt');
+	if (!(is_numeric($excerpt_count) && 0 <= intval($excerpt_count))) $excerpt_count = 0;
+	$excerpt_count = intval($excerpt_count);
+
+	// should only a few buttons be shown?
+	$only_buttons = get_option('reaction_buttons_widget_buttons');
+	$only_buttons = explode(",", preg_replace("/,\s+/", ",", $only_buttons));
+
 	// gather the output
 	$widget = "<div class='widget_reaction_buttons widget'>";
 	$widget .= "<h2 class='widgettitle'>" . $title . "</h2>";
-	$widget .= reaction_buttons_get_top_button_posts($limit_posts, $page = 1, $output_as_table = false);
+	$widget .= reaction_buttons_get_top_button_posts($limit_posts, $excerpt_count, $only_buttons, $page = 1, $output_as_table = false);
 	$widget .= "</div>";
 	echo $widget;
 }
@@ -1061,6 +1079,10 @@ function reaction_buttons_widget_control(){
 	<input name="reaction_buttons_widget_title" type="text" value="<?php echo get_option('reaction_buttons_widget_title') ?>" /></label></p>
 	<p><label><?php _e("How many posts to show:", 'reaction_buttons') ?><br />
 	<input name="reaction_buttons_widget_count" type="text" value="<?php echo get_option('reaction_buttons_widget_count'); ?>" /></label></p>
+	<p><label><?php _e("How many words as excerpts? 0 deactivates the excerpt:", 'reaction_buttons') ?><br />
+	<input name="reaction_buttons_widget_excerpt" type="text" value="<?php echo get_option('reaction_buttons_widget_excerpt'); ?>" /></label></p>
+	<p><label><?php _e("Show only those buttons (comma seperated, default all):", 'reaction_buttons') ?><br />
+	<input name="reaction_buttons_widget_buttons" type="text" value="<?php echo get_option('reaction_buttons_widget_buttons'); ?>" /></label></p>
 
 	<?php
 	// validate the input and update the settings
@@ -1076,6 +1098,18 @@ function reaction_buttons_widget_control(){
 		else {
 			reaction_buttons_message(__("Please input a positiv number!", 'reaction_buttons'));
 		}
+	}
+	if (isset($_POST['reaction_buttons_widget_excerpt'])){
+		$excerpt = $_POST['reaction_buttons_widget_excerpt'];
+		if (is_numeric($excerpt) && 0 <= intval($excerpt)) {
+			update_option('reaction_buttons_widget_excerpt', attribute_escape($excerpt));
+		}
+		else {
+			update_option('reaction_buttons_widget_excerpt', 0);
+		}
+	}
+	if (isset($_POST['reaction_buttons_widget_buttons'])){
+		update_option('reaction_buttons_widget_buttons', attribute_escape($_POST['reaction_buttons_widget_buttons']));
 	}
 }
 
@@ -1145,14 +1179,18 @@ add_action("plugins_loaded", "reaction_buttons_init_widget");
  * Function for the shortcode [reaction_buttons_most_clicks]
  *
  * shortcode [reaction_buttons_most_clicks] shows the most clicked post of each button.
- * Takes "limit_posts" as parameter to specify the number of posts to show.
- * (default 3 per button)
+ * Takes the following parameter:
+ * * limit_posts: to specify the number of posts to show per button. (default 3)
+ * * excerpt_length: number of words of the article to show as an excerpt.
+ *                   0 deactivates the excerpt. (default deactivated)
+ * * only_buttons: comma separated list of buttons to show. Default is to show all
  */
 function reaction_buttons_most_clicks($atts) {
-	extract(shortcode_atts(array('limit_posts' => 3,), $atts));
+	extract(shortcode_atts(array('limit_posts' => 3, 'excerpt_length' => 0, 'only_buttons' => ""), $atts));
 
+	$only_buttons = explode(",", preg_replace("/,\s+/", ",", $only_buttons));
 	$html = "<div class='reaction_buttons_most_clicks'>";
-	$html .= reaction_buttons_get_top_button_posts($limit_posts, $page = 1, $output_as_table = false);
+	$html .= reaction_buttons_get_top_button_posts($limit_posts, $excerpt_length, $only_buttons, $page = 1, $output_as_table = false);
 	$html .= "</div>";
 	return $html;
 }
