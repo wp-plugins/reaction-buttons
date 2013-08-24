@@ -3,7 +3,7 @@
    Plugin Name: Reaction Buttons
    Plugin URI: http://blog.jl42.de/reaction-buttons/
    Description: Adds Buttons for very simple and fast feedback to your post. Inspired by Blogger.
-   Version: 1.4.1
+   Version: 1.4.4
    Author: Jakob Lenfers
    Author URI: http://blog.jl42.de
 
@@ -49,8 +49,10 @@ function prepare_attr_jl($str) {
  * Returns the reaction buttons.
  */
 function reaction_buttons_html() {
+        global $reaction_buttons_deactivate;
+
 	// check if reaction buttons are somehow deactivated for this post
-	if (get_post_meta(get_the_ID(),'_reaction_buttons_off',true) or !get_option(reaction_buttons_activate)) {
+	if (get_post_meta(get_the_ID(),'_reaction_buttons_off',true) or !get_option(reaction_buttons_activate) or $reaction_buttons_deactivate) {
 		return "";
 	}
 	// check if this is an excluded category
@@ -499,6 +501,7 @@ function reaction_buttons_increment_button_php(){
 
 	// support for clearing the articles cache if w3total cache is installed
 	if(get_option(reaction_buttons_clear_supported_caches)){
+		// W3 Total Cache
 		if (function_exists('w3tc_pgcache_flush_post')) {
 			w3tc_pgcache_flush_post($post_id);
 		}
@@ -933,7 +936,7 @@ function reaction_buttons_get_top_button_posts($limit_posts = 3, $excerpt_length
 
 			$html .= "<a href='" . get_permalink($post->ID) . "'>" . $post->post_title . '&nbsp;<span style="color: #000; font-weight: bold">('.$count.')</span></a>';
 			if($excerpt_length > 0){
-				$html .= "<p class='reaction_buttons_excerpt'>" . wp_trim_words($post->post_content, $excerpt_length) . "</p>";
+				$html .= "<p class='reaction_buttons_excerpt'>" . wp_trim_words(strip_shortcodes($post->post_content), $excerpt_length) . "</p>";
 			}
 
 			if($limit_posts > 1){
@@ -1057,7 +1060,7 @@ function reaction_buttons_widget() {
 
 	// should only a few buttons be shown?
 	$only_buttons = get_option('reaction_buttons_widget_buttons');
-	$only_buttons = explode(",", preg_replace("/,\s+/", ",", $only_buttons));
+	$only_buttons = empty( $only_buttons ) ? array() : explode(",", preg_replace("/,\s+/", ",", $only_buttons));
 
 	// gather the output
 	$widget = "<div class='widget_reaction_buttons widget'>";

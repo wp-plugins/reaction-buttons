@@ -1,8 +1,8 @@
 === Reaction Buttons ===
-Tags: feedback, polls, button, comment
+Tags: feedback, polls, button, comment, widget, sidebar
 Requires at least: 3.3
-Tested up to: 3.5.1
-Stable tag: 1.4.1
+Tested up to: 3.6
+Stable tag: 1.4.4
 License: GPLv2 or later
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=MLX3Z7ZD5AJ4Q
 
@@ -38,6 +38,9 @@ Nothing fancy, just like any wordpress addon:
 * Is your PHP installation new enough? Reaction buttons require at least PHP 5.2.
 * Do you use a cache plugin? When the page is cached as soon as you reload the page your vote isn't shown anymore until the cache is cleared. See below.
 
+= I want to deactivate reaction buttons in certain situations =
+* Next to the normal options (categories, page types, post options, ...) you can set the global variable $reaction_buttons_deactivate to true e.g. in your plugin or certain theme regions to deactivate reaction buttons during the execution of that code. But don't forget to set it to false again when you are done!
+
 = How can the plugin work with plugins that cache the posts to increase page performance? =
 * I added an option to refresh the cache of a page after a button was clicked. But the cache plugin has to be supported by reaction buttons.
 
@@ -53,6 +56,15 @@ Nothing fancy, just like any wordpress addon:
 2. Shows the sidebar widget with some dummy data.
 
 == Changelog ==
+= 1.4.4 =
+* added a global var to deactivate reaction buttons from other code. See the FAQ for more info.
+
+= 1.4.3 =
+* another small bugfix regarding the button statistics widget: Strip shortcodes (like image caption) from the excerpt.
+
+= 1.4.2 =
+* small bugfix regarding the button statistics widget: If no button was given, it didn't show any buttons at all instead of all. Thanks [max_Q](http://wordpress.org/support/topic/only-buttons-option-default-to-show-all-not-working?replies=1#post-4135674) for the fix.
+
 = 1.4.1 =
 * had to bump the required version of wordpress to 3.3 because of the new button statistics widgets features.
 
