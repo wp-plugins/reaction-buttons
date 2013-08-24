@@ -3,7 +3,7 @@
    Plugin Name: Reaction Buttons
    Plugin URI: http://blog.jl42.de/reaction-buttons/
    Description: Adds Buttons for very simple and fast feedback to your post. Inspired by Blogger.
-   Version: 1.4.3
+   Version: 1.4.4
    Author: Jakob Lenfers
    Author URI: http://blog.jl42.de
 
@@ -49,8 +49,10 @@ function prepare_attr_jl($str) {
  * Returns the reaction buttons.
  */
 function reaction_buttons_html() {
+        global $reaction_buttons_deactivate;
+
 	// check if reaction buttons are somehow deactivated for this post
-	if (get_post_meta(get_the_ID(),'_reaction_buttons_off',true) or !get_option(reaction_buttons_activate)) {
+	if (get_post_meta(get_the_ID(),'_reaction_buttons_off',true) or !get_option(reaction_buttons_activate) or $reaction_buttons_deactivate) {
 		return "";
 	}
 	// check if this is an excluded category
