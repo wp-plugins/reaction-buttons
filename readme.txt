@@ -46,6 +46,7 @@ Nothing fancy, just like any wordpress addon:
 
 = What cache plugins are supported for automatic cache refresh? =
 * W3 Total Cache
+* Quickcache seems to be working with an easy workaround, check [hengxis solution in the forums](http://wordpress.org/support/topic/adding-support-for-quick-cache?replies=3#post-4573581)
 
 = My plugin isn't listed, can you add support? =
 * Sure, use the [wordpress support forums](http://wordpress.org/tags/reaction-buttons?forum_id=10) with a link to the plugin and I'll check it out next time I've got time for the plugin. If you want it fast, check the documentation of the cache plugin and find me the function to delete single page caches. Then it shouldn't be a problem to implement shortly.
