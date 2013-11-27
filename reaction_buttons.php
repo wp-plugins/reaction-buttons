@@ -481,7 +481,6 @@ function reaction_buttons_js_header() {
 						if(use_percentages){
 							var i;
 							var b;
-							console.log(data['percentage']);
 							for(i = 0; i < buttons.length; ++i){
 								b = buttons[i];
 								jQuery("#reaction_buttons_post" + post_id + " .reaction_button_" + prepare_attr_jl(b) + "_count .count").html("("+data['percentage'][b]+")");
