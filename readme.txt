@@ -1,8 +1,8 @@
 === Reaction Buttons ===
 Tags: feedback, polls, button, comment, widget, sidebar
 Requires at least: 3.3
-Tested up to: 3.8
-Stable tag: 1.6
+Tested up to: 3.8.1
+Stable tag: 1.6.1
 License: GPLv2 or later
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=MLX3Z7ZD5AJ4Q
 
@@ -57,6 +57,9 @@ Nothing fancy, just like any wordpress addon:
 2. Shows the sidebar widget with some dummy data.
 
 == Changelog ==
+= 1.6.1 =
+* updated a few functions that were deprecated and threw notices on systems running with debug
+
 = 1.6 =
 * added the option to show the full post in the widgets
 * fixed an error that read the wrong settings variable for the one widget
