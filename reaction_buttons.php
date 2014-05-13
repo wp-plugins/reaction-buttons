@@ -3,9 +3,10 @@
    Plugin Name: Reaction Buttons
    Plugin URI: http://blog.jl42.de/reaction-buttons/
    Description: Adds Buttons for very simple and fast feedback to your post. Inspired by Blogger.
-   Version: 1.6.1
+   Version: 1.6.2
    Author: Jakob Lenfers
    Author URI: http://blog.jl42.de
+   Text Domain: reaction_buttons
 
    I used the sociable plugin as template.
 
@@ -310,7 +311,7 @@ function reaction_buttons_button_statistic_page(){
             ?>
         </table>
         <div style="width: 100%; margin-top: 20px;">
-        	Pages:
+       	<?php _e('Page', 'reaction_buttons'); ?>:
             <form action="<?php echo esc_attr( $_SERVER['REQUEST_URI'] ); ?>" method="post">
 				<input name="button_statistics" value="<?php _e("Statistics page", 'reaction_buttons'); ?>" type="hidden" />
 			<?php
@@ -354,7 +355,7 @@ function reaction_buttons_clicked_statistic_page(){
             ?>
         </table>
         <div style="width: 100%; margin-top: 20px;">
-        	Pages:
+       	<?php _e('Page', 'reaction_buttons'); ?>:
             <form action="<?php echo esc_attr( $_SERVER['REQUEST_URI'] ); ?>" method="post">
 				<input name="clicked_statistics" value="<?php _e("Statistics page", 'reaction_buttons'); ?>" type="hidden" />
 			<?php
@@ -926,7 +927,7 @@ function reaction_buttons_submenu() {
 					</th>
 					<td>
 						<input type="checkbox" name="usecss" <?php checked( get_option('reaction_buttons_usecss'), true ); ?> /> <?php _e("Use the Reaction Buttons stylesheet?", "reaction_buttons"); ?><br />
-						If you want to customize the look of Reaction Buttons, copy the content of the <a href="<?php echo $reaction_buttons_plugin_path?>reaction_buttons.css" target="_blank">reaction_buttons.css</a> into your css, modify it and disable this option.
+						<?php sprintf(__('If you want to customize the look of Reaction Buttons, copy the content of the %s into your css, modify it and disable this option.', 'reaction_buttons'), '<a href="<?php echo $reaction_buttons_plugin_path?>reaction_buttons.css" target="_blank">reaction_buttons.css</a>'); ?>
 					</td>
 				</tr>
 				<tr>
@@ -957,7 +958,7 @@ function reaction_buttons_filter_plugin_actions( $links, $file ){
 	if ( ! $this_plugin ) $this_plugin = plugin_basename(__FILE__);
 
 	if ( $file == $this_plugin ){
-		$settings_link = '<a href="options-general.php?page=reaction_buttons">' . __('Settings') . '</a>';
+		$settings_link = '<a href="options-general.php?page=reaction_buttons">' . __('Settings', 'reaction_buttons') . '</a>';
 		array_unshift( $links, $settings_link ); // before other links
 	}
 	return $links;
