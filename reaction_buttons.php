@@ -3,10 +3,11 @@
    Plugin Name: Reaction Buttons
    Plugin URI: http://blog.jl42.de/reaction-buttons/
    Description: Adds Buttons for very simple and fast feedback to your post. Inspired by Blogger.
-   Version: 1.6.2
+   Version: 1.7
    Author: Jakob Lenfers
    Author URI: http://blog.jl42.de
    Text Domain: reaction_buttons
+   Domain Path: i18n/
 
    I used the sociable plugin as template.
 
@@ -512,7 +513,13 @@ function reaction_buttons_init(){
 	wp_enqueue_script("jquery");
 	wp_enqueue_script("json2");
 }
+
+function reaction_buttons_i18n_init(){
+        load_plugin_textdomain('reaction_buttons', false, dirname(plugin_basename(__FILE__)) . '/i18n/');
+}
+
 add_action('wp_enqueue_scripts', 'reaction_buttons_init' );
+add_action('plugins_loaded', 'reaction_buttons_i18n_init');
 add_action('wp_head', 'reaction_buttons_js_header' );
 add_action('wp_ajax_reaction_buttons_increment_button_php', 'reaction_buttons_increment_button_php', 1, 2);
 add_action('wp_ajax_nopriv_reaction_buttons_increment_button_php', 'reaction_buttons_increment_button_php', 1, 2);
@@ -750,11 +757,12 @@ function reaction_buttons_submenu() {
 
 		// done saving
 		if ( $error ) {
-			$error = __("Some settings couldn't be saved. More details in the error message below:<br />", 'reaction_buttons') . $error;
+			$error = __("Some settings couldn't be saved. More details in the error message below:", 'reaction_buttons').
+			  "<br />" . $error;
 			reaction_buttons_message($error);
 		}
 		else {
-			reaction_buttons_message(__("Changes saved. <a href=''>Back</a>", 'reaction_buttons'));
+			reaction_buttons_message(__("Changes saved.", 'reaction_buttons') . "<a href=''>" . __("Back", 'reaction_buttons') . "</a>");
 		}
 	}
 	else {
@@ -810,7 +818,7 @@ function reaction_buttons_submenu() {
 						<?php _e("Reaction Buttons:", "reaction_buttons"); ?>
 					</th>
 					<td>
-						<?php _e("Reaction button titles, comma seperated.<br />You may use spaces, but should stay away from exclamation marks and such. If your button doesn't update after you click it, there might be something like an exclamation mark in its name.", 'reaction_buttons'); ?><br/>
+						<?php echo __("Reaction button titles, comma seperated.", 'reaction_buttons') . "<br />" . __("You may use spaces, but should stay away from exclamation marks and such. If your button doesn't update after you click it, there might be something like an exclamation mark in its name.", 'reaction_buttons'); ?><br/>
 						<input size="80" type="text" name="button_names" value="<?php echo esc_attr(stripslashes(get_option('reaction_buttons_button_names'))); ?>" />
 					</td>
 				</tr>
@@ -879,8 +887,8 @@ function reaction_buttons_submenu() {
 					</th>
 					<td>
 						<input type="checkbox" name="clear_supported_caches" <?php checked( get_option('reaction_buttons_clear_supported_caches'), true ); ?> /> <?php _e("Try to clear cache from supported caching plugins to make the vote show up at once?", "reaction_buttons"); ?><br/>
-						<?php _e("Currently supported systems are: W3 Total Cache", "reaction_buttons"); ?><br/>
-						<?php _e("If you need another plugin added here, please consult the <a href='http://wordpress.org/extend/plugins/reaction-buttons/faq/'>Reaction Buttons FAQ</a>.", "reaction_buttons"); ?>
+						<?php _e("Currently supported systems are:", "reaction_buttons"); ?> W3 Total Cache<br/>
+						<?php sprintf(__("If you need another plugin added here, please consult the <a href='%s'>Reaction Buttons FAQ</a>.", "reaction_buttons"), "http://wordpress.org/extend/plugins/reaction-buttons/faq/"); ?>
 					</td>
 				</tr>
 				<tr>
