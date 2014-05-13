@@ -1,0 +1,357 @@
+# Copyright (C) 2014 
+# This file is distributed under the same license as the  package.
+msgid ""
+msgstr ""
+"Project-Id-Version:  \n"
+"Report-Msgid-Bugs-To: http://wordpress.org/tag/reaction-buttons\n"
+"POT-Creation-Date: 2014-05-13 10:29:03+00:00\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"PO-Revision-Date: 2014-05-13 13:45+0200\n"
+"Last-Translator: Jakob Lenfers <jakob@lenfers.org>\n"
+"Language: de_DE\n"
+
+#: reaction_buttons.php:306
+msgid "Reaction Buttons Button Statistics"
+msgstr "Reaction Buttons Button Statistiken"
+
+#: reaction_buttons.php:314 reaction_buttons.php:358
+msgid "Page"
+msgstr "Seite"
+
+#: reaction_buttons.php:316 reaction_buttons.php:360
+msgid "Statistics page"
+msgstr "Statistiken"
+
+#: reaction_buttons.php:349
+msgid "Reaction Buttons Clicked Statistics"
+msgstr "Statistiken überPosts mit den meisten Klicks"
+
+#: reaction_buttons.php:350
+msgid ""
+"For this to work correctly, you may need to delete unused button data from "
+"old button names on the settings page."
+msgstr "Damit das richtig funktioniert, müssen möglicherweise alte Button-Daten in den Einstellungen gelöscht werden."
+
+#: reaction_buttons.php:410
+msgid "Removed unused data."
+msgstr "Ungenutze Daten gelöscht."
+
+#: reaction_buttons.php:616
+msgid "Disable Reaction Buttons?"
+msgstr "Reaction Buttons deaktivieren?"
+
+#: reaction_buttons.php:666
+msgid ""
+"Restored all settings to defaults. You might want to also delete unused data "
+"now."
+msgstr "Standard-Einstellungen wiederhergestellt. Es könnte sinnvoll sein nun ungenutzte Daten in den Einstellungen löschen zu lassen."
+
+#: reaction_buttons.php:705
+msgid "Error: Button Names cannot contain quotes (\")."
+msgstr "Fehler: Namen von Buttons können keine Anführungszeichen enthalten (\")."
+
+#: reaction_buttons.php:753
+msgid "Some settings couldn't be saved. More details in the error message below:"
+msgstr "Einige Einstellungen konnten nicht gespeichert werden. Weitere Details:"
+
+#: reaction_buttons.php:757
+msgid "Changes saved."
+msgstr "Änderungen gespeichert."
+
+#: reaction_buttons.php:757
+msgid "Back"
+msgstr "Zurück"
+
+#: reaction_buttons.php:772
+msgid "Reaction Buttons Options"
+msgstr "Reaction Buttons Optionen"
+
+#: reaction_buttons.php:776
+msgid "Show Reaction Buttons"
+msgstr "Zeige Reaction Buttons"
+
+#: reaction_buttons.php:784
+msgid "Position in the post:"
+msgstr "Position im Beitrag"
+
+#: reaction_buttons.php:787
+msgid "Where should the reaction buttons appear?"
+msgstr "Wo sollen die Reaction Buttons angezeigt werden?"
+
+#: reaction_buttons.php:788
+msgid "(The default \"after the post\" should work well for most blogs.)"
+msgstr "(Die Default-Einstellunge \"hinter dem Beitrag\" sollte gut für die meisten Blogs funktionieren.)"
+
+#: reaction_buttons.php:793
+msgid "Place the reaction buttons after the post"
+msgstr "Platziere die Reaction Buttons nach dem Beitrag"
+
+#: reaction_buttons.php:794
+msgid "Place the reaction buttons above the post"
+msgstr "Platziere die Reaction Buttons über dem Beitrag"
+
+#: reaction_buttons.php:795
+msgid ""
+"Activate the shortcode [reaction_buttons] to place them somewhere in your "
+"post."
+msgstr "Aktiviere den Shortcode [reaction_buttons] um sie manuell im Beitrag zu positionieren."
+
+#: reaction_buttons.php:796
+msgid ""
+"You can also set the reaction buttons manually in your theme, by calling the "
+"function reaction_buttons_html(). But beware that it needs to be inside of "
+"<a href='http://codex.wordpress.org/The_Loop'>The Loop</a>."
+msgstr "Reaction Buttons können auch manuell im Theme eingebaut werden, indem man die Funktion reaction_buttons_html() aufruft. Das muss jedoch im sogenannten <a href='http://codex.wordpress.org/The_Loop'>Loop</a> passieren."
+
+#: reaction_buttons.php:801
+msgid "Tagline:"
+msgstr "Tagline:"
+
+#: reaction_buttons.php:804
+msgid "Text above the reaction buttons. HTML is allowed in this field."
+msgstr "Text über den Reaction Buttons. HTML ist in diesem Feld erlaubt."
+
+#: reaction_buttons.php:810
+msgid "Reaction Buttons:"
+msgstr "Reaction Buttons:"
+
+#: reaction_buttons.php:813
+msgid "Reaction button titles, comma seperated."
+msgstr "Die Namen der einzelnen Reaction Buttons, kommagetrennt."
+
+#: reaction_buttons.php:813
+msgid ""
+"You may use spaces, but should stay away from exclamation marks and such. If "
+"your button doesn't update after you click it, there might be something like "
+"an exclamation mark in its name."
+msgstr "Leerzeichen sind erlaubt, aber Sonderzeichen wie Ausrufungszeichen sind problematisch. Wenn die Buttons nicht aktualisiert werden, hat das JavaScript wahrscheinlich Probleme mit Sonderzeichen."
+
+#: reaction_buttons.php:819
+msgid "Show results after vote:"
+msgstr "Zeige Ergebnisse erst nach der Abstimmung:"
+
+#: reaction_buttons.php:822
+msgid ""
+"Show the current numbers of the reaction buttons only after the user voted."
+msgstr "Zeige die aktuelle Anzahl Stimmen für einen Button erst nachdem der User geklickt hat."
+
+#: reaction_buttons.php:827
+msgid "Only one vote:"
+msgstr "Nur eine Stimme:"
+
+#: reaction_buttons.php:830
+msgid ""
+"If checked a user is only allowed to vote once per post and not once per "
+"button."
+msgstr "Wenn die Option aktiviert ist, darf der User nur einmal per Post klicken und nicht nur einmal per Button."
+
+#: reaction_buttons.php:835
+msgid "Show percentages:"
+msgstr "Zeige Prozentwerte:"
+
+#: reaction_buttons.php:838
+msgid "Show percentages instead of the number of votes"
+msgstr "Zeige Prozentwerte anstatt der absoluten Anzahl Stimmen"
+
+#: reaction_buttons.php:839
+msgid "Number of decimal points for the percentages"
+msgstr "Anzahl der Dezimalstellen für die Prozentanzeige"
+
+#: reaction_buttons.php:844
+msgid "Use as counter:"
+msgstr "Nutze Buttons als Zähler:"
+
+#: reaction_buttons.php:847
+msgid "If checked a user can click multiple times on the button."
+msgstr "Wenn die Option aktiviert ist kann ein Benutzer einen Button mehrfach anklicken."
+
+#: reaction_buttons.php:852
+msgid "Use cookies:"
+msgstr "Nutze Cookies:"
+
+#: reaction_buttons.php:855
+msgid ""
+"Use cookies to make it harder to vote twice? (Only if 'Use as counters' is "
+"disabled)"
+msgstr "Nutzung von Cookies macht es schwerer mehrfach abzustimmen. (Nur wenn 'Nutze Buttons als Zähler' deaktiviert ist.)"
+
+#: reaction_buttons.php:860
+msgid "Already voted popup text:"
+msgstr "Text bei mehrfacher Abstimmung:"
+
+#: reaction_buttons.php:863
+msgid ""
+"A text to popup if a users tries to vote twice. Leave empty to disable this "
+"function."
+msgstr "Ein Textpopup wenn ein User versucht mehrfach abzustimmen. Leer lassen um die Funktion zu deaktivieren."
+
+#: reaction_buttons.php:869
+msgid "Reaction Summary"
+msgstr "Reaction Zusammenfassung"
+
+#: reaction_buttons.php:872
+msgid ""
+"Reaction summary. Use it to tell your users what's been clicked most. Leave "
+"empty to disable this function."
+msgstr "Nutze diese Funktion um hervorzuheben was am meisten geklickt wurde. Leer lassen um die Funktion zu deaktivieren."
+
+#: reaction_buttons.php:872
+msgid ""
+"%s is going to be replaced with the name of the most clicked button, e.g. "
+"'Most people think this post is %s!'"
+msgstr "%s wird mit dem Namen des meistgeklickten Buttons ersetzt, z.B. 'Die meisten Leser glauben der Post ist %s!'"
+
+#: reaction_buttons.php:878
+msgid "Clear cache:"
+msgstr "Lösche Cache:"
+
+#: reaction_buttons.php:881
+msgid ""
+"Try to clear cache from supported caching plugins to make the vote show up "
+"at once?"
+msgstr "Das Plugin versucht unterstützte Caches zu löschen, damit die Stimme sofort angezeigt wird."
+
+#: reaction_buttons.php:882
+msgid "Currently supported systems are:"
+msgstr "Aktuell unterstützte Plugins sind:"
+
+#: reaction_buttons.php:891
+msgid ""
+"If you need another plugin added here, please consult the <a "
+"href='%s'>Reaction Buttons FAQ</a>."
+msgstr "Die <a href='%s'>Reaction Buttons FAQ</a> enthält Informationen wie weitere Plugins hinzugefügt werden können."
+
+#: reaction_buttons.php:888
+msgid "Page types:"
+msgstr "Seiten-Typen:"
+
+#: reaction_buttons.php:891
+msgid "Chose the pages on which to display the reaction buttons."
+msgstr "Wähle auf welchen Seiten-Typen Reaction Buttons angezeigt werden sollen."
+
+#: reaction_buttons.php:896
+msgid "Front page of the blog"
+msgstr "Startseite des Blogs"
+
+#: reaction_buttons.php:897
+msgid "Individual blog posts"
+msgstr "Einzelne Blog-Beiträge"
+
+#: reaction_buttons.php:898
+msgid "Individual WordPress \"Pages\""
+msgstr "Einzelne Wordpress Seiten"
+
+#: reaction_buttons.php:899
+msgid "Category archives"
+msgstr "Kategorienarchive"
+
+#: reaction_buttons.php:900
+msgid "Tag listings"
+msgstr "Übersicht der Tags"
+
+#: reaction_buttons.php:901
+msgid "Date-based archives"
+msgstr "Datums-basierte Archive"
+
+#: reaction_buttons.php:902
+msgid "Author archives"
+msgstr "Autorenarchive"
+
+#: reaction_buttons.php:903
+msgid "Search results"
+msgstr "Suchergebnisse"
+
+#: reaction_buttons.php:908
+msgid "Exclude categories:"
+msgstr "Auszuschließende Kategorien:"
+
+#: reaction_buttons.php:911
+msgid ""
+"Don't show reaction buttons on posts which are in the following categories."
+msgstr "Zeige keine Reaction Buttons in Posts aus den folgenden Kategorien."
+
+#: reaction_buttons.php:926
+msgid "Use CSS:"
+msgstr "Nutze CSS:"
+
+#: reaction_buttons.php:929
+msgid "Use the Reaction Buttons stylesheet?"
+msgstr "Nuzte das Reaction Buttons CSS?"
+
+#: reaction_buttons.php:938
+msgid ""
+"If you want to customize the look of Reaction Buttons, copy the content of "
+"the %s into your css, modify it and disable this option."
+msgstr "Um das Aussehen von Reaction Buttons anzupassen muss der Inhalt der %s in das Blog-CSS kopiert werden und diese Option deaktiviert werden."
+
+#: reaction_buttons.php:936
+msgid "Save Changes"
+msgstr "Einstellungen Speichern"
+
+#: reaction_buttons.php:937
+msgid "Restore Built-in Defaults"
+msgstr "Standard-Einstellungen wiederherstellen"
+
+#: reaction_buttons.php:938
+msgid "Remove unused data"
+msgstr "Lösche ungenutzte Daten"
+
+#: reaction_buttons.php:939
+msgid "Button statistics page"
+msgstr "Button Statistiken"
+
+#: reaction_buttons.php:940
+msgid "Most clicked statistics page"
+msgstr "Meist geklickte Posts"
+
+#: reaction_buttons.php:961
+msgid "Settings"
+msgstr "Einstellungen"
+
+#: reaction_buttons.php:1146 reaction_buttons.php:1246
+msgid "Most clicked buttons"
+msgstr "Meistgeklickte Reaction Buttons"
+
+#: reaction_buttons.php:1169
+msgid "This widget shows the posts with the most clicks for each button."
+msgstr "Dieses Widget zeigt die Posts mit den meisten Klicks für jeden Button"
+
+#: reaction_buttons.php:1173 reaction_buttons.php:1245
+msgid "Title:"
+msgstr "Titel:"
+
+#: reaction_buttons.php:1175 reaction_buttons.php:1247
+msgid "How many posts to show:"
+msgstr "Wieviele Posts sollen gezeigt werden:"
+
+#: reaction_buttons.php:1177 reaction_buttons.php:1249
+msgid ""
+"How many words as excerpts? 0 deactivates the excerpt, -1 shows the full "
+"post:"
+msgstr "Wie viele Worte als Vorschau? 0 deaktiviert die Vorschau, -1 zeigt den ganzen Post:"
+
+#: reaction_buttons.php:1179
+msgid "Show only those buttons (comma seperated, default all):"
+msgstr "Zeige nur folgende Buttons (kommagetrennt, standard sind alle):"
+
+#: reaction_buttons.php:1194 reaction_buttons.php:1264
+msgid "Please input a positiv number!"
+msgstr "Bitte gib eine positive Zahl ein!"
+
+#: reaction_buttons.php:1227
+msgid "Most clicked posts"
+msgstr "Meist geklickte Posts"
+
+#: reaction_buttons.php:1241
+msgid "This widget shows the posts with the most clicks over all buttons."
+msgstr "Das Widget zeigt die Posts mit den meisten Klicks über alle Buttons gezählt."
+
+#: reaction_buttons.php:1286 reaction_buttons.php:1291
+msgid "Reaction Buttons button statistics"
+msgstr "Reaction Buttons Button Statistik"
+
+#: reaction_buttons.php:1296 reaction_buttons.php:1301
+msgid "Reaction Buttons most clicked posts"
+msgstr "Posts mit den meistgeklickte Reaction Buttons "
