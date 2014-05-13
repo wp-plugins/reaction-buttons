@@ -1,8 +1,8 @@
 === Reaction Buttons ===
 Tags: feedback, polls, button, comment, widget, sidebar
 Requires at least: 3.3
-Tested up to: 3.8.1
-Stable tag: 1.6.1
+Tested up to: 3.9.1
+Stable tag: 1.7.0
 License: GPLv2 or later
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=MLX3Z7ZD5AJ4Q
 
@@ -23,7 +23,6 @@ Nothing fancy, just like any wordpress addon:
 1. Optionally configure the plugin in the settings tab
 
 * You can also use the widget to show the top x posts with the most clicks for each button in your sidebar. Or alternatively you can use the shortcode [reaction_buttons_most_clicks] to insert the same information somewhere in your post. The default is [reaction_buttons_most_clicks limit_posts=3]. It takes the following arguments:
- * limit_posts: how many posts per button should be shown
  * limit_posts: specify the number of posts to show per button. (default 3)
  * excerpt_length: number of words of the article to show as an excerpt. 0 deactivates the excerpt. (default deactivated)
  * only_buttons: comma separated list of buttons to show. Default is to show all
@@ -57,6 +56,10 @@ Nothing fancy, just like any wordpress addon:
 2. Shows the sidebar widget with some dummy data.
 
 == Changelog ==
+= 1.7 =
+* added German translation
+* fixed a few errors regarding translation
+
 = 1.6.1 =
 * updated a few functions that were deprecated and threw notices on systems running with debug
 
