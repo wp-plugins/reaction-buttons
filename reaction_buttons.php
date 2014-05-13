@@ -888,7 +888,7 @@ function reaction_buttons_submenu() {
 					<td>
 						<input type="checkbox" name="clear_supported_caches" <?php checked( get_option('reaction_buttons_clear_supported_caches'), true ); ?> /> <?php _e("Try to clear cache from supported caching plugins to make the vote show up at once?", "reaction_buttons"); ?><br/>
 						<?php _e("Currently supported systems are:", "reaction_buttons"); ?> W3 Total Cache<br/>
-						<?php sprintf(__("If you need another plugin added here, please consult the <a href='%s'>Reaction Buttons FAQ</a>.", "reaction_buttons"), "http://wordpress.org/extend/plugins/reaction-buttons/faq/"); ?>
+						<?php printf(__("If you need another plugin added here, please consult the <a href='%s'>Reaction Buttons FAQ</a>.", "reaction_buttons"), "http://wordpress.org/extend/plugins/reaction-buttons/faq/"); ?>
 					</td>
 				</tr>
 				<tr>
@@ -935,7 +935,7 @@ function reaction_buttons_submenu() {
 					</th>
 					<td>
 						<input type="checkbox" name="usecss" <?php checked( get_option('reaction_buttons_usecss'), true ); ?> /> <?php _e("Use the Reaction Buttons stylesheet?", "reaction_buttons"); ?><br />
-						<?php sprintf(__('If you want to customize the look of Reaction Buttons, copy the content of the %s into your css, modify it and disable this option.', 'reaction_buttons'), '<a href="<?php echo $reaction_buttons_plugin_path?>reaction_buttons.css" target="_blank">reaction_buttons.css</a>'); ?>
+						<?php printf(__('If you want to customize the look of Reaction Buttons, copy the content of the %s into your css, modify it and disable this option.', 'reaction_buttons'), '<a href="' . $reaction_buttons_plugin_path . 'reaction_buttons.css" target="_blank">reaction_buttons.css</a>'); ?>
 					</td>
 				</tr>
 				<tr>
@@ -944,6 +944,7 @@ function reaction_buttons_submenu() {
 						<span class="submit"><input name="save" value="<?php _e("Save Changes", 'reaction_buttons'); ?>" type="submit" /></span>
 						<span class="submit"><input name="restore" value="<?php _e("Restore Built-in Defaults", 'reaction_buttons'); ?>" type="submit"/></span>
 						<span class="submit"><input name="remove" value="<?php _e("Remove unused data", 'reaction_buttons'); ?>" type="submit"/></span>
+<br />
                         <span class="submit"><input name="button_statistics" value="<?php _e("Button statistics page", 'reaction_buttons'); ?>" type="submit"/></span>
                         <span class="submit"><input name="clicked_statistics" value="<?php _e("Most clicked statistics page", 'reaction_buttons'); ?>" type="submit"/></span>
 					</td>
