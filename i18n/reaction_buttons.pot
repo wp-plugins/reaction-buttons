@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  \n"
 "Report-Msgid-Bugs-To: http://wordpress.org/tag/reaction-buttons\n"
-"POT-Creation-Date: 2014-05-13 12:10:11+00:00\n"
+"POT-Creation-Date: 2014-05-14 07:50:20+00:00\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -311,48 +311,54 @@ msgstr ""
 msgid "Settings"
 msgstr ""
 
-#: reaction_buttons.php:1155 reaction_buttons.php:1255
+#: reaction_buttons.php:1163 reaction_buttons.php:1277
 msgid "Most clicked buttons"
 msgstr ""
 
-#: reaction_buttons.php:1178
+#: reaction_buttons.php:1189
 msgid "This widget shows the posts with the most clicks for each button."
 msgstr ""
 
-#: reaction_buttons.php:1182 reaction_buttons.php:1254
+#: reaction_buttons.php:1193 reaction_buttons.php:1276
 msgid "Title:"
 msgstr ""
 
-#: reaction_buttons.php:1184 reaction_buttons.php:1256
+#: reaction_buttons.php:1195 reaction_buttons.php:1278
 msgid "How many posts to show:"
 msgstr ""
 
-#: reaction_buttons.php:1186 reaction_buttons.php:1258
+#: reaction_buttons.php:1197 reaction_buttons.php:1280
 msgid ""
 "How many words as excerpts? 0 deactivates the excerpt, -1 shows the full "
 "post:"
 msgstr ""
 
-#: reaction_buttons.php:1188
+#: reaction_buttons.php:1199
 msgid "Show only those buttons (comma seperated, default all):"
 msgstr ""
 
-#: reaction_buttons.php:1203 reaction_buttons.php:1273
+#: reaction_buttons.php:1201 reaction_buttons.php:1282
+msgid ""
+"Show a possible post thumbnail? (Might need some manual adaptations in your "
+"CSS to look nice.)"
+msgstr ""
+
+#: reaction_buttons.php:1216 reaction_buttons.php:1297
 msgid "Please input a positiv number!"
 msgstr ""
 
-#: reaction_buttons.php:1236
+#: reaction_buttons.php:1255
 msgid "Most clicked posts"
 msgstr ""
 
-#: reaction_buttons.php:1250
+#: reaction_buttons.php:1272
 msgid "This widget shows the posts with the most clicks over all buttons."
 msgstr ""
 
-#: reaction_buttons.php:1295 reaction_buttons.php:1300
+#: reaction_buttons.php:1325 reaction_buttons.php:1330
 msgid "Reaction Buttons button statistics"
 msgstr ""
 
-#: reaction_buttons.php:1305 reaction_buttons.php:1310
+#: reaction_buttons.php:1335 reaction_buttons.php:1340
 msgid "Reaction Buttons most clicked posts"
 msgstr ""
