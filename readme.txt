@@ -2,7 +2,7 @@
 Tags: feedback, polls, button, comment, widget, sidebar
 Requires at least: 3.3
 Tested up to: 3.9.1
-Stable tag: 1.7.0
+Stable tag: 1.8.0
 License: GPLv2 or later
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=MLX3Z7ZD5AJ4Q
 
@@ -26,6 +26,7 @@ Nothing fancy, just like any wordpress addon:
  * limit_posts: specify the number of posts to show per button. (default 3)
  * excerpt_length: number of words of the article to show as an excerpt. 0 deactivates the excerpt. (default deactivated)
  * only_buttons: comma separated list of buttons to show. Default is to show all
+ * show_post_thumb: if the widget should try to display a post thumbnail, true or false (default)
 * There is another shortcode for the reaction summary. Engage with your users by including the most clicked button in a summary, e.g. "Most people found this post interesting!" while "interesting" is the most clicked button. Activate it in the options or place it anywhere with the shortcode [reaction_buttons_reaction_summary], which takes summary_text as an argument. In the summary text you can use %s as a place holder for the most clicked button, e.g. [reaction_buttons_reaction_summary summary_text="Most people found this post %s!"] for the example above.
 
 == Frequently Asked Questions ==
@@ -56,6 +57,11 @@ Nothing fancy, just like any wordpress addon:
 2. Shows the sidebar widget with some dummy data.
 
 == Changelog ==
+= 1.8 =
+* added option for post thumbs to the widgets
+* added show_post_thumb (true/false) to the [reaction_buttons_most_clicks] shortcode
+* fixed an error with the [reaction_buttons_most_clicks] shortcode, only_buttons doesn't have to be set anymore to show all buttons
+
 = 1.7 =
 * added German translation
 * fixed a few errors regarding translation

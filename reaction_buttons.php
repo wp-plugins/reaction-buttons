@@ -308,7 +308,7 @@ function reaction_buttons_button_statistic_page(){
         <table class="form-table" border="1" style="border: 1px solid #818181;">
 			<?php
             $pagination = reaction_buttons_button_paginate_statistics($page = 1, $per_page = 10);
-            echo reaction_buttons_get_top_button_posts($pagination['perPage'],  0, "", $pagination['page'], $output_as_table = true);
+            echo reaction_buttons_get_top_button_posts($pagination['perPage'],  0, "", $pagination['page'], false, $output_as_table = true);
             ?>
         </table>
         <div style="width: 100%; margin-top: 20px;">
@@ -352,7 +352,7 @@ function reaction_buttons_clicked_statistic_page(){
         <table class="form-table" border="1" style="border: 1px solid #818181;">
 			<?php
             $pagination = reaction_buttons_clicked_paginate_statistics($page = 1, $per_page = 10);
-            echo reaction_buttons_get_top_clicked_posts($pagination['perPage'], 0, $pagination['page']);
+            echo reaction_buttons_get_top_clicked_posts($pagination['perPage'], 0, $pagination['page'], false);
             ?>
         </table>
         <div style="width: 100%; margin-top: 20px;">
@@ -978,7 +978,7 @@ add_filter( 'plugin_action_links', 'reaction_buttons_filter_plugin_actions', 10,
  * Function to gather the top $limit_posts for each Raction Button. Used for the widget
  * and the shortcode
  */
-function reaction_buttons_get_top_button_posts($limit_posts = 3, $excerpt_length = 0, $only_buttons = "", $page = 1, $output_as_table = false){
+function reaction_buttons_get_top_button_posts($limit_posts = 3, $excerpt_length = 0, $only_buttons = "", $page = 1, $show_post_thumb = false, $output_as_table = false){
 	global $wpdb;
 	$table = $wpdb->prefix . "postmeta";
 
@@ -1014,13 +1014,17 @@ function reaction_buttons_get_top_button_posts($limit_posts = 3, $excerpt_length
 
 			// lists looks dumb if the widget shows only the best post
 			if($limit_posts > 1){
-				$output_as_table == false ? $html .= "<li>" : $html .= "";
+				$html .= $output_as_table == false ? "<li>" : "";
 			}
 			else{
-				$output_as_table == false ? $html .= "<p>" : $html .= "";
+				$html .= $output_as_table == false ? "<p>" : "";
 			}
 
-			$html .= "<a href='" . get_permalink($post->ID) . "'>" . $post->post_title . '&nbsp;<span style="color: #000; font-weight: bold">('.$count.')</span></a>';
+			$html .= "<a href='" . get_permalink($post->ID) . "'>";
+			if($show_post_thumb && get_the_post_thumbnail($post->ID)){
+				$html .= get_the_post_thumbnail($post->ID) . "<br />";
+			}
+			$html .= $post->post_title . '&nbsp;<span style="color: #000; font-weight: bold">('.$count.')</span></a>';
 			if($excerpt_length > 0){
 				$html .= "<p class='reaction_buttons_excerpt'>" . wp_trim_words(strip_shortcodes($post->post_content), $excerpt_length) . "</p>";
 			}
@@ -1029,10 +1033,10 @@ function reaction_buttons_get_top_button_posts($limit_posts = 3, $excerpt_length
 			}
 
 			if($limit_posts > 1){
-				$output_as_table == false ? $html .= "</li>" : $html .= "<br />";
+				$html .= $output_as_table == false ? "</li>" : "<br />";
 			}
 			else{
-				$output_as_table == false ? $html .= "</p>" : $html .= "";
+				$html .= $output_as_table == false ? "</p>" : "";
 			}
 		}
 
@@ -1046,7 +1050,7 @@ function reaction_buttons_get_top_button_posts($limit_posts = 3, $excerpt_length
 /**
  * Function to gather the top clicked posts.
  */
-function reaction_buttons_get_top_clicked_posts($limit_posts = 5, $excerpt_length = 0, $page = 1){
+function reaction_buttons_get_top_clicked_posts($limit_posts = 5, $excerpt_length = 0, $page = 1, $show_post_thumb = false){
 	global $wpdb;
 	$table = $wpdb->prefix . "postmeta";
 
@@ -1079,7 +1083,11 @@ function reaction_buttons_get_top_clicked_posts($limit_posts = 5, $excerpt_lengt
 		else{
 			$html .= "<p>";
 		}
-		$html .= "<a href='" . get_permalink($post->ID) . "'>" . $post->post_title . '&nbsp;<span style="color: #000; font-weight: bold">('.$count.')</span></a>';
+	  	$html .= "<a href='" . get_permalink($post->ID) . "'>";
+		if($show_post_thumb && get_the_post_thumbnail($post->ID)){
+			$html .= get_the_post_thumbnail($post->ID) . "<br />";
+		}
+		$html .= $post->post_title . '&nbsp;<span style="color: #000; font-weight: bold">('.$count.')</span></a>';
 		if($excerpt_length > 0){
 			$html .= "<p class='reaction_buttons_excerpt'>" . wp_trim_words(strip_shortcodes($post->post_content), $excerpt_length) . "</p>";
 		}
@@ -1163,10 +1171,13 @@ function reaction_buttons_widget() {
 	$only_buttons = get_option('reaction_buttons_widget_buttons');
 	$only_buttons = empty( $only_buttons ) ? array() : explode(",", preg_replace("/,\s+/", ",", $only_buttons));
 
+	// should a possible post thumbnail be shown?
+	$show_post_thumb = get_option('reaction_buttons_widget_thumb', false);
+
 	// gather the output
 	$widget = "<div class='widget_reaction_buttons widget'>";
 	$widget .= "<h2 class='widgettitle'>" . $title . "</h2>";
-	$widget .= reaction_buttons_get_top_button_posts($limit_posts, $excerpt_length, $only_buttons, $page = 1, $output_as_table = false);
+	$widget .= reaction_buttons_get_top_button_posts($limit_posts, $excerpt_length, $only_buttons, $page = 1, $show_post_thumb, $output_as_table = false);
 	$widget .= "</div>";
 	echo $widget;
 }
@@ -1187,6 +1198,8 @@ function reaction_buttons_widget_control(){
 	<input name="reaction_buttons_widget_excerpt" type="number" min="-1" value="<?php echo get_option('reaction_buttons_widget_excerpt'); ?>" /></label></p>
 	<p><label><?php _e("Show only those buttons (comma seperated, default all):", 'reaction_buttons') ?><br />
 	<input name="reaction_buttons_widget_buttons" type="text" value="<?php echo get_option('reaction_buttons_widget_buttons'); ?>" /></label></p>
+	<p><label><?php _e("Show a possible post thumbnail? (Might need some manual adaptations in your CSS to look nice.)", 'reaction_buttons') ?><br />
+	<input name="reaction_buttons_widget_thumb" type="checkbox" <?php checked(get_option('reaction_buttons_widget_thumb', false), true); ?> /></label></p>
 
 	<?php
 	// validate the input and update the settings
@@ -1216,6 +1229,12 @@ function reaction_buttons_widget_control(){
 	if (isset($_POST['reaction_buttons_widget_buttons'])){
 		update_option('reaction_buttons_widget_buttons', esc_attr($_POST['reaction_buttons_widget_buttons']));
 	}
+	if (isset($_POST['reaction_buttons_widget_thumb']) && $_POST['reaction_buttons_widget_thumb']){
+		update_option('reaction_buttons_widget_thumb',true);
+	}
+	else{
+		update_option('reaction_buttons_widget_thumb',false);
+	}
 }
 
 /**
@@ -1235,10 +1254,13 @@ function reaction_buttons_clicked_widget() {
 	// get title
 	$title = get_option('reaction_buttons_clicked_widget_title', __("Most clicked posts", 'reaction_buttons'));
 
+	// should a possible post thumbnail be shown?
+	$show_post_thumb = get_option('reaction_buttons_clicked_widget_thumb', false);
+
 	// gather the output
 	$widget = "<div class='widget_reaction_buttons_clicked widget'>";
 	$widget .= "<h2 class='widgettitle'>" . $title . "</h2>";
-	$widget .= reaction_buttons_get_top_clicked_posts($limit_posts, $excerpt_length, $page = 1);
+	$widget .= reaction_buttons_get_top_clicked_posts($limit_posts, $excerpt_length, $page = 1, $show_post_thumb);
 	$widget .= "</div>";
 	echo $widget;
 }
@@ -1257,6 +1279,8 @@ function reaction_buttons_clicked_widget_control(){
 	<input name="reaction_buttons_clicked_widget_count" type="number" min="1" value="<?php echo get_option('reaction_buttons_clicked_widget_count', 3); ?>" /></label></p>
 	<p><label><?php _e("How many words as excerpts? 0 deactivates the excerpt, -1 shows the full post:", 'reaction_buttons') ?><br />
 	<input name="reaction_buttons_clicked_widget_excerpt" type="number" min="-1" value="<?php echo get_option('reaction_buttons_clicked_widget_excerpt', 0); ?>" /></label></p>
+	<p><label><?php _e("Show a possible post thumbnail? (Might need some manual adaptations in your CSS to look nice.)", 'reaction_buttons') ?><br />
+	<input name="reaction_buttons_clicked_widget_thumb" type="checkbox" <?php checked(get_option('reaction_buttons_clicked_widget_thumb', false), true); ?> /></label></p>
 
 	<?php
 	// validate the input and update the settings
@@ -1282,6 +1306,12 @@ function reaction_buttons_clicked_widget_control(){
 		else {
 			update_option('reaction_buttons_clicked_widget_excerpt', 0);
 		}
+	}
+	if (isset($_POST['reaction_buttons_clicked_widget_thumb']) && $_POST['reaction_buttons_clicked_widget_thumb']){
+		update_option('reaction_buttons_clicked_widget_thumb',true);
+	}
+	else{
+		update_option('reaction_buttons_clicked_widget_thumb',false);
 	}
 
 }
@@ -1322,13 +1352,16 @@ add_action("plugins_loaded", "reaction_buttons_init_widget");
  * * excerpt_length: number of words of the article to show as an excerpt.
  *                   0 deactivates the excerpt, -1 shows full post. (default deactivated)
  * * only_buttons: comma separated list of buttons to show. Default is to show all
+ * * show_post_thumb: if the widget should try to display a post thumbnail, true or false
  */
 function reaction_buttons_most_clicks($atts) {
-	extract(shortcode_atts(array('limit_posts' => 3, 'excerpt_length' => 0, 'only_buttons' => ""), $atts));
+	extract(shortcode_atts(array('limit_posts' => 3, 'excerpt_length' => 0, 'only_buttons' => "", 'show_post_thumb' => false), $atts));
+	if(!empty($only_buttons)){
+		$only_buttons = explode(",", preg_replace("/,\s+/", ",", $only_buttons));
+	}
 
-	$only_buttons = explode(",", preg_replace("/,\s+/", ",", $only_buttons));
 	$html = "<div class='reaction_buttons_most_clicks'>";
-	$html .= reaction_buttons_get_top_button_posts($limit_posts, $excerpt_length, $only_buttons, $page = 1, $output_as_table = false);
+	$html .= reaction_buttons_get_top_button_posts($limit_posts, $excerpt_length, $only_buttons, $page = 1, $show_post_thumb, $output_as_table = false);
 	$html .= "</div>";
 	return $html;
 }

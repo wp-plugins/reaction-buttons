@@ -8,7 +8,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2014-05-13 13:45+0200\n"
+"PO-Revision-Date: 2014-05-14 09:55+0200\n"
 "Last-Translator: Jakob Lenfers <jakob@lenfers.org>\n"
 "Language: de_DE\n"
 
@@ -335,6 +335,11 @@ msgstr "Wie viele Worte als Vorschau? 0 deaktiviert die Vorschau, -1 zeigt den g
 #: reaction_buttons.php:1179
 msgid "Show only those buttons (comma seperated, default all):"
 msgstr "Zeige nur folgende Buttons (kommagetrennt, standard sind alle):"
+
+msgid ""
+"Show a possible post thumbnail? (Might need some manual adaptations in your "
+"CSS to look nice.)"
+msgstr "Zeige Post Thumbnail? (Könnte manuelle Anpassungen im CSS benötigen um gut auszusehen.)"
 
 #: reaction_buttons.php:1194 reaction_buttons.php:1264
 msgid "Please input a positiv number!"
