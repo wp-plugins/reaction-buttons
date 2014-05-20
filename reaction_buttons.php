@@ -3,7 +3,7 @@
    Plugin Name: Reaction Buttons
    Plugin URI: http://blog.jl42.de/reaction-buttons/
    Description: Adds Buttons for very simple and fast feedback to your post. Inspired by Blogger.
-   Version: 1.8.0
+   Version: 1.8.1
    Author: Jakob Lenfers
    Author URI: http://blog.jl42.de
    Text Domain: reaction_buttons
@@ -1186,9 +1186,45 @@ function reaction_buttons_widget() {
  * Add settings to the widget page
  */
 function reaction_buttons_widget_control(){
-	echo "<p>" . __("This widget shows the posts with the most clicks for each button.", 'reaction_buttons') . "</p>";
+	// save the settings if submitted
+        if (isset($_REQUEST['savewidgets']) && $_REQUEST['savewidgets']) {
+		// validate the input and update the settings
+		if (isset($_POST['reaction_buttons_widget_title'])){
+			update_option('reaction_buttons_widget_title', esc_attr($_POST['reaction_buttons_widget_title']));
+		}
+
+		if (isset($_POST['reaction_buttons_widget_count'])){
+			$count = $_POST['reaction_buttons_widget_count'];
+			if (is_numeric($count) && 0 < intval($count)) {
+				update_option('reaction_buttons_widget_count', esc_attr($count));
+			}
+			else {
+				reaction_buttons_message(__("Please input a positiv number!", 'reaction_buttons'));
+			}
+		}
+	
+		if (isset($_POST['reaction_buttons_widget_excerpt'])){
+			$excerpt = $_POST['reaction_buttons_widget_excerpt'];
+			if (is_numeric($excerpt)) {
+				update_option('reaction_buttons_widget_excerpt', esc_attr($excerpt));
+			}
+			else {
+				update_option('reaction_buttons_widget_excerpt', 0);
+			}
+		}
+		if (isset($_POST['reaction_buttons_widget_buttons'])){
+			update_option('reaction_buttons_widget_buttons', esc_attr($_POST['reaction_buttons_widget_buttons']));
+		}
+		if (isset($_POST['reaction_buttons_widget_thumb']) && $_POST['reaction_buttons_widget_thumb']){
+			update_option('reaction_buttons_widget_thumb', true);
+		}
+		else{
+			update_option('reaction_buttons_widget_thumb', false);
+		}
+	}
 
 	// show the current settings and the dialog
+	echo "<p>" . __("This widget shows the posts with the most clicks for each button.", 'reaction_buttons') . "</p>";
 	?>
 	<p><label><?php _e("Title:", 'reaction_buttons') ?><br />
 	<input name="reaction_buttons_widget_title" type="text" value="<?php echo get_option('reaction_buttons_widget_title') ?>" /></label></p>
@@ -1200,41 +1236,7 @@ function reaction_buttons_widget_control(){
 	<input name="reaction_buttons_widget_buttons" type="text" value="<?php echo get_option('reaction_buttons_widget_buttons'); ?>" /></label></p>
 	<p><label><?php _e("Show a possible post thumbnail? (Might need some manual adaptations in your CSS to look nice.)", 'reaction_buttons') ?><br />
 	<input name="reaction_buttons_widget_thumb" type="checkbox" <?php checked(get_option('reaction_buttons_widget_thumb', false), true); ?> /></label></p>
-
-	<?php
-	// validate the input and update the settings
-	if (isset($_POST['reaction_buttons_widget_title'])){
-		update_option('reaction_buttons_widget_title', esc_attr($_POST['reaction_buttons_widget_title']));
-	}
-
-	if (isset($_POST['reaction_buttons_widget_count'])){
-		$count = $_POST['reaction_buttons_widget_count'];
-		if (is_numeric($count) && 0 < intval($count)) {
-			update_option('reaction_buttons_widget_count', esc_attr($count));
-		}
-		else {
-			reaction_buttons_message(__("Please input a positiv number!", 'reaction_buttons'));
-		}
-	}
-	
-	if (isset($_POST['reaction_buttons_widget_excerpt'])){
-		$excerpt = $_POST['reaction_buttons_widget_excerpt'];
-		if (is_numeric($excerpt)) {
-			update_option('reaction_buttons_widget_excerpt', esc_attr($excerpt));
-		}
-		else {
-			update_option('reaction_buttons_widget_excerpt', 0);
-		}
-	}
-	if (isset($_POST['reaction_buttons_widget_buttons'])){
-		update_option('reaction_buttons_widget_buttons', esc_attr($_POST['reaction_buttons_widget_buttons']));
-	}
-	if (isset($_POST['reaction_buttons_widget_thumb']) && $_POST['reaction_buttons_widget_thumb']){
-		update_option('reaction_buttons_widget_thumb',true);
-	}
-	else{
-		update_option('reaction_buttons_widget_thumb',false);
-	}
+<?php
 }
 
 /**
@@ -1269,9 +1271,42 @@ function reaction_buttons_clicked_widget() {
  * Add settings to the widget page
  */
 function reaction_buttons_clicked_widget_control(){
-	echo "<p>" . __("This widget shows the posts with the most clicks over all buttons.", 'reaction_buttons') . "</p>";
+	// save the settings if submitted
+        if (isset($_REQUEST['savewidgets']) && $_REQUEST['savewidgets']) {
+	// validate the input and update the settings
+		if (isset($_POST['reaction_buttons_clicked_widget_title'])){
+			update_option('reaction_buttons_clicked_widget_title', esc_attr($_POST['reaction_buttons_clicked_widget_title']));
+		}
+
+		if (isset($_POST['reaction_buttons_clicked_widget_count'])){
+			$count = $_POST['reaction_buttons_clicked_widget_count'];
+			if (is_numeric($count) && 0 < intval($count)) {
+				update_option('reaction_buttons_clicked_widget_count', esc_attr($count));
+			}
+			else {
+				reaction_buttons_message(__("Please input a positiv number!", 'reaction_buttons'));
+			}
+		}
+	
+		if (isset($_POST['reaction_buttons_clicked_widget_excerpt'])){
+			$excerpt = $_POST['reaction_buttons_clicked_widget_excerpt'];
+			if (is_numeric($excerpt)) {
+				update_option('reaction_buttons_clicked_widget_excerpt', esc_attr($excerpt));
+			}
+			else {
+				update_option('reaction_buttons_clicked_widget_excerpt', 0);
+			}
+		}
+		if (isset($_POST['reaction_buttons_clicked_widget_thumb']) && $_POST['reaction_buttons_clicked_widget_thumb']){
+			update_option('reaction_buttons_clicked_widget_thumb',true);
+		}
+		else{
+			update_option('reaction_buttons_clicked_widget_thumb',false);
+		}
+	}
 
 	// show the current settings and the dialog
+	echo "<p>" . __("This widget shows the posts with the most clicks over all buttons.", 'reaction_buttons') . "</p>";
 	?>
 	<p><label><?php _e("Title:", 'reaction_buttons') ?><br />
 	<input name="reaction_buttons_clicked_widget_title" type="text" value="<?php echo get_option('reaction_buttons_clicked_widget_title', __("Most clicked buttons", 'reaction_buttons')) ?>" /></label></p>
@@ -1283,37 +1318,6 @@ function reaction_buttons_clicked_widget_control(){
 	<input name="reaction_buttons_clicked_widget_thumb" type="checkbox" <?php checked(get_option('reaction_buttons_clicked_widget_thumb', false), true); ?> /></label></p>
 
 	<?php
-	// validate the input and update the settings
-	if (isset($_POST['reaction_buttons_clicked_widget_title'])){
-		update_option('reaction_buttons_clicked_widget_title', esc_attr($_POST['reaction_buttons_clicked_widget_title']));
-	}
-
-	if (isset($_POST['reaction_buttons_clicked_widget_count'])){
-		$count = $_POST['reaction_buttons_clicked_widget_count'];
-		if (is_numeric($count) && 0 < intval($count)) {
-			update_option('reaction_buttons_clicked_widget_count', esc_attr($count));
-		}
-		else {
-			reaction_buttons_message(__("Please input a positiv number!", 'reaction_buttons'));
-		}
-	}
-	
-	if (isset($_POST['reaction_buttons_clicked_widget_excerpt'])){
-		$excerpt = $_POST['reaction_buttons_clicked_widget_excerpt'];
-		if (is_numeric($excerpt)) {
-			update_option('reaction_buttons_clicked_widget_excerpt', esc_attr($excerpt));
-		}
-		else {
-			update_option('reaction_buttons_clicked_widget_excerpt', 0);
-		}
-	}
-	if (isset($_POST['reaction_buttons_clicked_widget_thumb']) && $_POST['reaction_buttons_clicked_widget_thumb']){
-		update_option('reaction_buttons_clicked_widget_thumb',true);
-	}
-	else{
-		update_option('reaction_buttons_clicked_widget_thumb',false);
-	}
-
 }
 
 /**
