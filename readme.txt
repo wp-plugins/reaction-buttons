@@ -1,8 +1,8 @@
 === Reaction Buttons ===
 Tags: feedback, polls, button, comment, widget, sidebar
 Requires at least: 3.3
-Tested up to: 4.0
-Stable tag: 1.8.1
+Tested up to: 4.1
+Stable tag: 1.8.2
 License: GPLv2 or later
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=MLX3Z7ZD5AJ4Q
 
@@ -51,12 +51,20 @@ Nothing fancy, just like any wordpress addon:
 = My plugin isn't listed, can you add support? =
 * Sure, use the [wordpress support forums](http://wordpress.org/tags/reaction-buttons?forum_id=10) with a link to the plugin and I'll check it out next time I've got time for the plugin. If you want it fast, check the documentation of the cache plugin and find me the function to delete single page caches. Then it shouldn't be a problem to implement shortly.
 
+= How can I prevent users from voting twice? =
+There is an option "Use cookies" in the settings that sends cookies to prevent the user to vote twice on the same post/button (depending on other settings).
+
+It surely is not secure against somebody with bad intent, since they can just delete the cookie and reload the page. If I would save the IP instead, most users could reconnect their internet connection and get a new IP and sometimes on high traffic sites, a user wouldn't be able to react, because somebody else with this IP already clicked. This plugin wants to make it easy to get the users reactions and easy and secure don't work together.  The only secure way is letting them log in, but then you wouldn't get any reactions at all, since 99,9% wouldn't bother. 
+
 == Screenshots ==
 
 1. Shows a german default installation with Reaction Buttons and some clicks on them.
 2. Shows the sidebar widget with some dummy data.
 
 == Changelog ==
+= 1.8.2 =
+* bump for new wordpress version
+
 = 1.8.1 =
 * fixed an error in the new widget controls
 
