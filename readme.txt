@@ -1,8 +1,8 @@
 === Reaction Buttons ===
 Tags: feedback, polls, button, comment, widget, sidebar
 Requires at least: 3.3
-Tested up to: 4.0
-Stable tag: 1.8.1
+Tested up to: 4.1
+Stable tag: 1.8.2
 License: GPLv2 or later
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=MLX3Z7ZD5AJ4Q
 
@@ -34,9 +34,9 @@ Nothing fancy, just like any wordpress addon:
 * They are described in the [install tab](http://wordpress.org/extend/plugins/reaction-buttons/installation/).
 
 = My reaction buttons don't update =
-* Do you use any special characters like exclamation marks in your button names?
 * Is your PHP installation new enough? Reaction buttons require at least PHP 5.2.
 * Do you use a cache plugin? When the page is cached as soon as you reload the page your vote isn't shown anymore until the cache is cleared. See below.
+* (This shouldn't apply since version 2.0.0 anymore.) Do you use any special characters like exclamation marks in your button names?
 
 = I want to deactivate reaction buttons in certain situations =
 * Next to the normal options (categories, page types, post options, ...) you can set the global variable $reaction_buttons_deactivate to true e.g. in your plugin or certain theme regions to deactivate reaction buttons during the execution of that code. But don't forget to set it to false again when you are done!
@@ -51,12 +51,33 @@ Nothing fancy, just like any wordpress addon:
 = My plugin isn't listed, can you add support? =
 * Sure, use the [wordpress support forums](http://wordpress.org/tags/reaction-buttons?forum_id=10) with a link to the plugin and I'll check it out next time I've got time for the plugin. If you want it fast, check the documentation of the cache plugin and find me the function to delete single page caches. Then it shouldn't be a problem to implement shortly.
 
+= How can I prevent users from voting twice? =
+There is an option "Use cookies" in the settings that sends cookies to prevent the user to vote twice on the same post/button (depending on other settings).
+
+It surely is not secure against somebody with bad intent, since they can just delete the cookie and reload the page. If I would save the IP instead, most users could reconnect their internet connection and get a new IP and sometimes on high traffic sites, a user wouldn't be able to react, because somebody else with this IP already clicked. This plugin wants to make it easy to get the users reactions and easy and secure don't work together.  The only secure way is letting them log in, but then you wouldn't get any reactions at all, since 99,9% wouldn't bother. 
+
 == Screenshots ==
 
 1. Shows a german default installation with Reaction Buttons and some clicks on them.
 2. Shows the sidebar widget with some dummy data.
+3. The graph feature.
+4. The graph feature on a small screen.
+
+== Restrictions ==
+* When using plugins to cache the pages, the buttons won't be up to date. They will increment through the javascript, but when the page reloads the old count will show again, until the cache is deleted. Check the FAQ on possibilities how to change that.
+
+== Upgrade Notice ==
+= 2.0.0 =
+* This upgrade changes how the reaction data is saved and will convert automatically. But [saving your wordpress database](http://codex.wordpress.org/WordPress_Backups) just in case is never a bad idea, especially if you want to go back to the old system.
 
 == Changelog ==
+= 2.0.0 =
+* changed the way buttons are saved. They are simply numbered now, so there shouldn't be any problems with special characters. The plugin should automatically convert your reaction counts on the first run to the new system.
+* New graph feature, display the votes as a graph instead of buttons. This will possibly look bad and need css updates to match your blogs style.
+
+= 1.8.2 =
+* bump for new wordpress version
+
 = 1.8.1 =
 * fixed an error in the new widget controls
 
@@ -180,7 +201,3 @@ Nothing fancy, just like any wordpress addon:
 = 0.9 =
 * First public release.
 
-== Restrictions ==
-* There cannot be spaces in html classes, so the plugin wouldn't work if there would be buttons named "great article" *and* "great___article", because it converts the spaces into three underscores.
-* Also the addon (at least the ajax part) doesn't work with certain special chars like exclamation marks.
-* When using plugins to cache the pages, the buttons won't be up to date. They will increment through the javascript, but when the page reloads the old count will show again, until the cache is deleted. Check the FAQ on possibilities how to change that.
