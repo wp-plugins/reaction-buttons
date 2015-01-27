@@ -68,11 +68,12 @@ It surely is not secure against somebody with bad intent, since they can just de
 
 == Upgrade Notice ==
 = 2.0.0 =
-* This upgrade changes how the reaction data is saved and will convert automatically. But [saving your wordpress database](http://codex.wordpress.org/WordPress_Backups) just in case is never a bad idea, especially if you want to go back to the old system.
+* If you use your own CSS, you'll need to update it! This upgrade changes how the reaction data is saved and will convert automatically. But [saving your wordpress database](http://codex.wordpress.org/WordPress_Backups) just in case is a good idea, especially if you might want to ose an old version.
 
 == Changelog ==
 = 2.0.0 =
-* changed the way buttons are saved. They are simply numbered now, so there shouldn't be any problems with special characters. The plugin should automatically convert your reaction counts on the first run to the new system.
+* Changed the structure, CSS updates of custom CSS will be necessary.
+* Changed the way buttons are saved. They are simply numbered now, so there shouldn't be any problems with special characters. The plugin should automatically convert your reaction counts on the first run to the new system.
 * New graph feature, display the votes as a graph instead of buttons. This will possibly look bad and need css updates to match your blogs style.
 
 = 1.8.2 =
