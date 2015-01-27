@@ -63,12 +63,13 @@ div.reaction_buttons ul.graph li.reaction_button {
 @media (min-width: 700px) {
     div.reaction_buttons ul.graph {
         height: 250px;
+        width: 100%;
     }
     div.reaction_buttons ul.graph li.reaction_button {
         height: 250px;
         margin: 0 1.8% 0 0;
         padding: 0;
-        width: 18%;
+        width: 17%;
         display: inline-block;
     }
     div.reaction_buttons ul.graph li.reaction_button span.button_name {
