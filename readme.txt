@@ -34,9 +34,9 @@ Nothing fancy, just like any wordpress addon:
 * They are described in the [install tab](http://wordpress.org/extend/plugins/reaction-buttons/installation/).
 
 = My reaction buttons don't update =
-* Do you use any special characters like exclamation marks in your button names?
 * Is your PHP installation new enough? Reaction buttons require at least PHP 5.2.
 * Do you use a cache plugin? When the page is cached as soon as you reload the page your vote isn't shown anymore until the cache is cleared. See below.
+* (This shouldn't apply since version 2.0.0 anymore.) Do you use any special characters like exclamation marks in your button names?
 
 = I want to deactivate reaction buttons in certain situations =
 * Next to the normal options (categories, page types, post options, ...) you can set the global variable $reaction_buttons_deactivate to true e.g. in your plugin or certain theme regions to deactivate reaction buttons during the execution of that code. But don't forget to set it to false again when you are done!
@@ -60,8 +60,21 @@ It surely is not secure against somebody with bad intent, since they can just de
 
 1. Shows a german default installation with Reaction Buttons and some clicks on them.
 2. Shows the sidebar widget with some dummy data.
+3. The graph feature.
+4. The graph feature on a small screen.
+
+== Restrictions ==
+* When using plugins to cache the pages, the buttons won't be up to date. They will increment through the javascript, but when the page reloads the old count will show again, until the cache is deleted. Check the FAQ on possibilities how to change that.
+
+== Upgrade Notice ==
+= 2.0.0 =
+* This upgrade changes how the reaction data is saved and will convert automatically. But [saving your wordpress database](http://codex.wordpress.org/WordPress_Backups) just in case is never a bad idea, especially if you want to go back to the old system.
 
 == Changelog ==
+= 2.0.0 =
+* changed the way buttons are saved. They are simply numbered now, so there shouldn't be any problems with special characters. The plugin should automatically convert your reaction counts on the first run to the new system.
+* New graph feature, display the votes as a graph instead of buttons. This will possibly look bad and need css updates to match your blogs style.
+
 = 1.8.2 =
 * bump for new wordpress version
 
@@ -188,7 +201,3 @@ It surely is not secure against somebody with bad intent, since they can just de
 = 0.9 =
 * First public release.
 
-== Restrictions ==
-* There cannot be spaces in html classes, so the plugin wouldn't work if there would be buttons named "great article" *and* "great___article", because it converts the spaces into three underscores.
-* Also the addon (at least the ajax part) doesn't work with certain special chars like exclamation marks.
-* When using plugins to cache the pages, the buttons won't be up to date. They will increment through the javascript, but when the page reloads the old count will show again, until the cache is deleted. Check the FAQ on possibilities how to change that.

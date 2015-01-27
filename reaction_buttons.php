@@ -60,7 +60,7 @@ function reaction_buttons_html() {
 	$use_cookies = get_option("reaction_buttons_usecookies") && !$use_as_counter;
 	$use_percentages = get_option("reaction_buttons_percentages", false);
 	$use_percentages_precision = get_option("reaction_buttons_percentages_precision", 1);
-	$show_graphs = get_option("reaction_buttons_graphs", true) && $use_percentages; // todo
+	$show_graphs = get_option("reaction_buttons_graphs", false);
 	$show_after_votes = get_option("reaction_buttons_show_after_votes");
 
 	// if use of cookies is activated, check for them
@@ -104,7 +104,7 @@ function reaction_buttons_html() {
 	}
 
 	// get overall count for this post for the percentage view
-	if($use_percentages){
+	if($use_percentages || $show_graphs){
 		$count_all = 0;
 		foreach($buttons as $button_id => $button){
 			$count_all += intval(get_post_meta(get_the_ID(), "_reaction_buttons_" . $button_id, true));
@@ -118,16 +118,19 @@ function reaction_buttons_html() {
 		$count = intval(get_post_meta(get_the_ID(), "_reaction_buttons_" . $button_id, true));
 		$voted = array_key_exists($button_id, $cookie) && $cookie[$button_id];
 
-		if($use_percentages){
+		if($use_percentages || $show_graphs){
 			if(empty($count_all)){
-				$count = number_format(0, $use_percentages_precision) . "%";;
+				$percentage = number_format(0, $use_percentages_precision) . "%";;
 			}
 			else{
-				$count = number_format(100*$count/$count_all, $use_percentages_precision) . "%";
+				$percentage = number_format(100*$count/$count_all, $use_percentages_precision) . "%";
 			}
 		}
+        if($use_percentages){
+            $count = $percentage;
+        }
 
-        $html .= $show_graphs?"<li style='height: $count'":"<li ";
+        $html .= $show_graphs?"<li style='height: $percentage'":"<li ";
         $html .= "class='reaction_button reaction_button_" . $button_id;
 
 		if(($voted || $only_one_vote && $already_voted_other) && !$use_as_counter){
@@ -145,10 +148,10 @@ function reaction_buttons_html() {
         $html .= "<div>";
         $html .= "<span class='button_name'>" . $button . "</span>";
 		if(!$show_after_votes || $already_voted_other){
-			$html .= "&nbsp;<span class='count'>(<span class='count_number'>" . $count . "</span>)</span>";
+			$html .= "&nbsp;<span class='braces'>(</span><span class='count_number'>" . $count . "</span><span class='braces'>)</span>";
 		}
-		else{
-			$html .= "&nbsp;<span class='count' style='display: none;'>(<span class='count_number'>" . $count . "</span>)</span>";
+        else{
+			$html .= "&nbsp;<span class='braces' style='display: none;'>(<span class='count_number'></span><span class='braces' style='display: none;'>)</span>";
         }
         $html .= "</div></li>";
 	}
@@ -242,6 +245,18 @@ function reaction_buttons_restore_config($force=false) {
 		update_option('reaction_buttons_button_names', "Awesome, Interesting, Useful, Boring, Sucks");
 	}
 
+	if ( $force or !( get_option('reaction_buttons_percentages')) ) {
+		update_option('reaction_buttons_percentages', false);
+	}
+
+	if ( $force or !( get_option('reaction_buttons_percentages_precision')) ) {
+		update_option('reaction_buttons_percentages_precision', 0);
+	}
+
+	if ( $force or !( get_option('reaction_buttons_graphs')) ) {
+		update_option('reaction_buttons_graphs', false);
+	}
+
 	if ( $force or !( get_option('reaction_buttons_show_after_votes')) ) {
 		update_option('reaction_buttons_show_after_votes', false);
 	}
@@ -250,7 +265,7 @@ function reaction_buttons_restore_config($force=false) {
 		update_option('reaction_buttons_only_one_vote', false);
 	}
 
-		if ( $force or !( get_option('reaction_buttons_use_as_counter')) ) {
+    if ( $force or !( get_option('reaction_buttons_use_as_counter')) ) {
 		update_option('reaction_buttons_use_as_counter', false);
 	}
 
@@ -479,6 +494,14 @@ function reaction_buttons_js_header() {
 								jQuery("#reaction_buttons_post" + post_id + " .reaction_button_" + b + " .count_number").html(data['percentage'][b]);
 							}
 						}
+                        else if(show_after_votes){
+							var i;
+							var b;
+							for(i = 0; i < buttons.length; ++i){
+								b = buttons[i];
+								jQuery("#reaction_buttons_post" + post_id + " .reaction_button_" + b + " .count_number").html(data['counts'][b]);
+							}
+						}
 						else{
 							jQuery("#reaction_buttons_post" + post_id + " .reaction_button_" + button + " .count_number").html(data['count']);
 						}
@@ -488,8 +511,8 @@ function reaction_buttons_js_header() {
 						else{
 							jQuery("#reaction_buttons_post" + post_id + " .reaction_button_" + button).addClass('voted');
 						}
-						if(show_after_votes){
-							jQuery("#reaction_buttons_post" + post_id + " .reaction_button .count").removeAttr('style');
+                        if(show_after_votes){
+							jQuery("#reaction_buttons_post" + post_id + " .reaction_button .braces").removeAttr('style');
 						}
 					}
 			});
@@ -536,6 +559,7 @@ function reaction_buttons_increment_button_php(){
 	$result = array();
 	$use_percentages = get_option("reaction_buttons_percentages", false);
 	$use_percentages_precision = get_option("reaction_buttons_percentages_precision", 1);
+	$show_after_votes = get_option("reaction_buttons_show_after_votes");
 
 	// get all the buttons, stripped of whitespaces
 	$buttons = array_keys(explode(",", preg_replace("/,\s/", ",", get_option('reaction_buttons_button_names'))));
@@ -587,6 +611,12 @@ function reaction_buttons_increment_button_php(){
 		}
 	}
 
+    if($show_after_votes){
+		foreach($buttons as $button){
+            $result['counts'][$button] = intval(get_post_meta($post_id, "_reaction_buttons_" . $button, true));
+
+        }
+    }
 
 	$result['count'] = $current;
 
@@ -687,7 +717,7 @@ function reaction_buttons_submenu() {
 		$error = "";
 
 		// save the different settings (boolean, text, array of bool)
-		foreach ( array('activate', 'usecss', 'usecookies', 'only_one_vote', 'use_as_counter', 'show_after_votes', 'clear_supported_caches', 'percentages') as $val ) {
+		foreach ( array('activate', 'usecss', 'usecookies', 'only_one_vote', 'use_as_counter', 'show_after_votes', 'clear_supported_caches', 'percentages', 'graphs') as $val ) {
 			if ( isset($_POST[$val]) && $_POST[$val] )
 				update_option('reaction_buttons_'.$val,true);
 			else
@@ -842,6 +872,15 @@ function reaction_buttons_submenu() {
 					<td>
 						<input type="checkbox" name="percentages" <?php checked( get_option('reaction_buttons_percentages')); ?> /> <?php _e("Show percentages instead of the number of votes", "reaction_buttons"); ?><br />
 						<input type="number" min="0" max="9" name="percentages_precision" value="<?php echo get_option('reaction_buttons_percentages_precision', 1); ?>" /> <?php _e("Number of decimal points for the percentages", "reaction_buttons"); ?>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row" valign="top">
+						<?php _e("Show graphs:", "reaction_buttons"); ?>
+					</th>
+					<td>
+                    <input type="checkbox" name="graphs" <?php checked( get_option('reaction_buttons_graphs')); ?> />
+                        <?php _e("Show the results as clickable graphs instead of buttons. Beware, this feature might need massive css changes to look remotely good. I included an example that worked fine on my test blog, but I suspect it'll need adaptation.", "reaction_buttons"); ?><br />
 					</td>
 				</tr>
 				<tr>
