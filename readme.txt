@@ -1,8 +1,8 @@
 === Reaction Buttons ===
 Tags: feedback, polls, button, comment, widget, sidebar
 Requires at least: 3.3
-Tested up to: 4.1
-Stable tag: 1.8.2
+Tested up to: 4.2.2
+Stable tag: 2.1.0
 License: GPLv2 or later
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=MLX3Z7ZD5AJ4Q
 
@@ -67,10 +67,13 @@ It surely is not secure against somebody with bad intent, since they can just de
 * When using plugins to cache the pages, the buttons won't be up to date. They will increment through the javascript, but when the page reloads the old count will show again, until the cache is deleted. Check the FAQ on possibilities how to change that.
 
 == Upgrade Notice ==
-= 2.0.0 =
+= 2.1.0 =
 * If you use your own CSS, you'll need to update it! This upgrade changes how the reaction data is saved and will convert automatically. But [saving your wordpress database](http://codex.wordpress.org/WordPress_Backups) just in case is a good idea, especially if you might want to ose an old version.
 
 == Changelog ==
+= 2.1.0 =
+* added the possibilities to sort the buttons by votes
+
 = 2.0.0 =
 * Changed the structure, CSS updates of custom CSS will be necessary.
 * Changed the way buttons are saved. They are simply numbered now, so there shouldn't be any problems with special characters. The plugin should automatically convert your reaction counts on the first run to the new system.

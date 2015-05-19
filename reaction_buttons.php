@@ -3,7 +3,7 @@
    Plugin Name: Reaction Buttons
    Plugin URI: http://blog.jl42.de/reaction-buttons/
    Description: Adds Buttons for very simple and fast feedback to your post. Inspired by Blogger.
-   Version: 2.0.0
+   Version: 2.1.0
    Author: Jakob Lenfers
    Author URI: http://blog.jl42.de
    Text Domain: reaction_buttons
@@ -30,6 +30,12 @@
 
 // Determine the location
 $reaction_buttons_plugin_path = WP_CONTENT_URL.'/plugins/'.plugin_basename(dirname(__FILE__)).'/';
+
+function reaction_buttons_button_compare($a, $b){
+    if ($a['count'] == $b['count']) return 0;
+
+    return ($a['count'] < $b['count']) ? 1 : -1;
+}
 
 /**
  * Returns the reaction buttons.
@@ -61,7 +67,9 @@ function reaction_buttons_html() {
 	$use_percentages = get_option("reaction_buttons_percentages", false);
 	$use_percentages_precision = get_option("reaction_buttons_percentages_precision", 1);
 	$show_graphs = get_option("reaction_buttons_graphs", false);
-	$show_after_votes = get_option("reaction_buttons_show_after_votes");
+    $show_after_votes = get_option("reaction_buttons_show_after_votes");
+    $sort_by_votes = get_option("reaction_buttons_sort_buttons", false);
+    $sort_descending = get_option("reaction_buttons_sort_buttons_desc", false);
 
 	// if use of cookies is activated, check for them
 	$cookie = "";
@@ -88,8 +96,16 @@ function reaction_buttons_html() {
 		$html .= "</div>";
 	}
 
-	// get the buttons and strip whitespaces
-	$buttons = explode(",", preg_replace("/,\s+/", ",", get_option('reaction_buttons_button_names')));
+    // get the buttons and strip whitespaces
+    $buttons = array();
+	$buttons_tmp = explode(",", preg_replace("/,\s+/", ",", get_option('reaction_buttons_button_names')));
+
+    foreach($buttons_tmp as $button_id => $button){
+        $buttons[$button_id] = array(
+            'name' => $button,
+            'count' => intval(get_post_meta(get_the_ID(), "_reaction_buttons_" . $button_id, true))
+        );
+    }
 
 
 	$already_voted_other = false;
@@ -107,15 +123,20 @@ function reaction_buttons_html() {
 	if($use_percentages || $show_graphs){
 		$count_all = 0;
 		foreach($buttons as $button_id => $button){
-			$count_all += intval(get_post_meta(get_the_ID(), "_reaction_buttons_" . $button_id, true));
+			$count_all += $button['count'];
 		}
 	}
+
+    // instead of the order set in the config file, sort by votes
+    if($sort_by_votes)    uasort($buttons, 'reaction_buttons_button_compare');
+    // reverse sort order
+    if($sort_descending)  $buttons = array_reverse($buttons, true);
 
     $html .= $show_graphs?"<ul class='graph'>":"<ul>";
 	// print every button
 	foreach($buttons as $button_id => $button){
-		$clean_button = stripslashes(trim($button));
-		$count = intval(get_post_meta(get_the_ID(), "_reaction_buttons_" . $button_id, true));
+		$clean_button = stripslashes(trim($button['name']));
+		$count = $button['count'];
 		$voted = array_key_exists($button_id, $cookie) && $cookie[$button_id];
 
 		if($use_percentages || $show_graphs){
@@ -146,7 +167,7 @@ function reaction_buttons_html() {
 			$button_id . "');\">";
         }
         $html .= "<div>";
-        $html .= "<span class='button_name'>" . $button . "</span>";
+        $html .= "<span class='button_name'>" . $button['name'] . "</span>";
 		if(!$show_after_votes || $already_voted_other){
 			$html .= "&nbsp;<span class='braces'>(</span><span class='count_number'>" . $count . "</span><span class='braces'>)</span>";
 		}
@@ -283,6 +304,14 @@ function reaction_buttons_restore_config($force=false) {
 
 	if ( $force or !( get_option('reaction_buttons_clear_supported_caches')) ) {
 		update_option('reaction_buttons_clear_supported_caches', true);
+	}
+
+	if ( $force or !( get_option('reaction_buttons_sort_buttons')) ) {
+		update_option('reaction_buttons_sort_buttons', true);
+	}
+
+	if ( $force or !( get_option('reaction_buttons_sort_buttons')) ) {
+		update_option('reaction_buttons_sort_buttons_desc', true);
 	}
 
 	if ($force or !is_array(get_option('reaction_buttons_conditionals')))
@@ -534,7 +563,6 @@ function reaction_buttons_i18n_init(){
 
 
 if(version_compare(get_option('reaction_buttons_version'), '2', '<')){
-    error_log("noooo");
     reaction_buttons_upgrade_v200();
     update_option('reaction_buttons_version', '2.0.0');
 }
@@ -717,7 +745,7 @@ function reaction_buttons_submenu() {
 		$error = "";
 
 		// save the different settings (boolean, text, array of bool)
-		foreach ( array('activate', 'usecss', 'usecookies', 'only_one_vote', 'use_as_counter', 'show_after_votes', 'clear_supported_caches', 'percentages', 'graphs') as $val ) {
+		foreach ( array('activate', 'usecss', 'usecookies', 'only_one_vote', 'use_as_counter', 'show_after_votes', 'clear_supported_caches', 'percentages', 'graphs', 'sort_buttons', 'sort_buttons_desc') as $val ) {
 			if ( isset($_POST[$val]) && $_POST[$val] )
 				update_option('reaction_buttons_'.$val,true);
 			else
@@ -846,7 +874,9 @@ function reaction_buttons_submenu() {
 					</th>
 					<td>
 						<?php echo __("Reaction button titles, comma seperated.", 'reaction_buttons') ?><br/>
-						<input size="80" type="text" name="button_names" value="<?php echo esc_attr(stripslashes(get_option('reaction_buttons_button_names'))); ?>" />
+						<input size="80" type="text" name="button_names" value="<?php echo esc_attr(stripslashes(get_option('reaction_buttons_button_names'))); ?>" /><br/>
+						<input type="checkbox" name="sort_buttons" <?php checked( get_option('reaction_buttons_sort_buttons')); ?> /> <?php _e("Sort the buttons by votes instead of the order set up here.", "reaction_buttons"); ?><br/>
+						<input type="checkbox" name="sort_buttons_desc" <?php checked( get_option('reaction_buttons_sort_buttons_desc')); ?> /> <?php _e("Reverse sort order.", "reaction_buttons"); ?>
 					</td>
 				</tr>
 				<tr>
