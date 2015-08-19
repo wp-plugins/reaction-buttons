@@ -1,7 +1,7 @@
 === Reaction Buttons ===
 Tags: feedback, polls, button, comment, widget, sidebar
 Requires at least: 3.3
-Tested up to: 4.2.2
+Tested up to: 4.3
 Stable tag: 2.1.0
 License: GPLv2 or later
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=MLX3Z7ZD5AJ4Q
